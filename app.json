@@ -65,8 +65,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "44745523-f162-41f0-a681-979c383fbb55"
+        "projectId": "653afac9-5c82-4dbb-ae94-f8c7438c3b20"
       }
-    }
+    },
+    "owner": "noxyai"
   }
 }
