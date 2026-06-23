@@ -19,7 +19,7 @@ import { encodeCarToQR, getBaseWebUrl } from '../utils/qr';
 import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
 import * as FileSystem from 'expo-file-system';
-import * as MediaLibrary from 'expo-media-library';
+import * as MediaLibrary from 'expo-media-library/legacy';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { ArrowLeft, Shield } from 'lucide-react-native';
 import LoadingIndicator from '../components/LoadingIndicator';
