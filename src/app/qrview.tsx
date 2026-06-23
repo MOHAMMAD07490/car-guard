@@ -191,7 +191,7 @@ export default function QRViewScreen() {
       try {
         setGenerating(true);
         const filename = `qrnote_car_${car.carNumber.replace(/\s+/g, '_')}.png`;
-        const fileUri = `${FileSystem.cacheDirectory}${filename}`;
+        const fileUri = `${FileSystem.documentDirectory}${filename}`;
         
         // High resolution QR code download
         const downloadUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&color=000000&bgcolor=FFFFFF&ecc=H&data=${encodeURIComponent(qrUrl)}`;

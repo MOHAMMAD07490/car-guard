@@ -1,15 +1,26 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Platform, Text } from 'react-native';
-import { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
+import mobileAds, { BannerAd, BannerAdSize, TestIds } from 'react-native-google-mobile-ads';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 
 // The user provided AdMob ad unit ID
 const adUnitId = __DEV__ ? TestIds.BANNER : 'ca-app-pub-5128179758660592/9423586105';
 
 export const AdBanner = () => {
+  const [initialized, setInitialized] = useState(false);
   // AdMob is a native module and will instantly crash Expo Go.
   // We check if the app is running in the Expo Go client, and show a placeholder instead.
   const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+  useEffect(() => {
+    if (Platform.OS !== 'web' && !isExpoGo) {
+      mobileAds()
+        .initialize()
+        .then(() => {
+          setInitialized(true);
+        });
+    }
+  }, [isExpoGo]);
 
   if (Platform.OS === 'web') {
     return null; // AdMob does not support web
@@ -22,6 +33,10 @@ export const AdBanner = () => {
         <Text style={{ color: '#999', fontSize: 12, textAlign: 'center' }}>Ads will appear in the compiled APK.</Text>
       </View>
     );
+  }
+
+  if (!initialized) {
+    return null; // Don't render banner until SDK is initialized
   }
 
   return (

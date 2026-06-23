@@ -6,6 +6,22 @@ import { useIsOnline } from '../hooks/useIsOnline';
 import { WifiOff } from 'lucide-react-native';
 import { Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
 
+let Notifications: any = null;
+try {
+  if (Platform.OS !== 'web') {
+    Notifications = require('expo-notifications');
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+      }),
+    });
+  }
+} catch (e) {
+  console.warn('expo-notifications module is not available:', e);
+}
+
 function AppContent() {
   const { theme, colors } = useAppTheme();
   const isOnline = useIsOnline();
