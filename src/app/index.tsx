@@ -23,9 +23,18 @@ import GradientButton from '../components/GradientButton';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { Image } from 'expo-image';
 import CustomAlert from '../components/CustomAlert';
-import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+
+// Dynamically load expo-notifications to prevent crashes in Expo Go on Android
+let Notifications: any = null;
+try {
+  if (Platform.OS !== 'web') {
+    Notifications = require('expo-notifications');
+  }
+} catch (e) {
+  console.warn('expo-notifications module is not available:', e);
+}
 import LogoImage from '../../assets/images/icon.png';
 import WelcomeHeroImage from '../../assets/images/welcome_hero.png';
 import Example1Image from '../../assets/images/carguard_example1.png';
