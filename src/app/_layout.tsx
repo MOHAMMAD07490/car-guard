@@ -20,6 +20,8 @@ function AppContent() {
         <Stack.Screen name="register" />
         <Stack.Screen name="qrview" />
         <Stack.Screen name="alerts" />
+        <Stack.Screen name="privacy" />
+        <Stack.Screen name="terms" />
         <Stack.Screen name="scan/[data]" />
       </Stack>
     </View>

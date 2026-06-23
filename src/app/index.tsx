@@ -23,6 +23,9 @@ import GradientButton from '../components/GradientButton';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { Image } from 'expo-image';
 import LogoImage from '../../assets/images/icon.png';
+import WelcomeHeroImage from '../../assets/images/welcome_hero.png';
+import Example1Image from '../../assets/images/carguard_example1.png';
+import Example2Image from '../../assets/images/carguard_example2.png';
 import {
   Shield,
   Moon,
@@ -39,6 +42,7 @@ import {
   ChevronDown,
   ChevronUp,
   Check,
+  X,
   HelpCircle,
   Sparkles,
 } from 'lucide-react-native';
@@ -131,14 +135,73 @@ export default function HomeScreen() {
   };
 
   if (!user) {
-    // Unauthenticated View
+    if (Platform.OS !== 'web') {
+      // Mobile APK Welcome Page
+      return (
+        <View style={[styles.container, { backgroundColor: colors.background }]}>
+          {/* Header */}
+          <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+            <View style={styles.headerLeft}>
+              <Image source={LogoImage} style={{ width: 22, height: 22, marginRight: 8, borderRadius: 4 }} />
+              <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>QRNote</Text>
+            </View>
+            <TouchableOpacity onPress={toggleTheme} style={[styles.themeBtn, { backgroundColor: colors.surfaceLight }]}>
+              {theme === 'dark' ? <Sun size={18} color={colors.textPrimary} /> : <Moon size={18} color={colors.textPrimary} />}
+            </TouchableOpacity>
+          </View>
+
+          <ScrollView 
+            contentContainerStyle={styles.mobileWelcomeScroll} 
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.mobileHero}>
+              <Image 
+                source={WelcomeHeroImage} 
+                style={styles.mobileHeroImage} 
+                contentFit="contain"
+              />
+              <Text style={[styles.mobileHeroTitle, { color: colors.textPrimary }]}>
+                Shield Your Identity
+              </Text>
+              <Text style={[styles.mobileHeroDesc, { color: colors.textSecondary }]}>
+                Generate a privacy-safe QR code note for your dashboard. Observers can scan it to alert you of emergencies instantly—without ever seeing your phone number.
+              </Text>
+
+              <GradientButton
+                title="Get Started"
+                onPress={() => router.push('/login')}
+                style={styles.mobileWelcomeBtn}
+              />
+            </View>
+
+            {/* Mobile Footer */}
+            <View style={[styles.mobileFooter, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+              <Text style={[styles.footerText, { color: colors.textMuted }]}>
+                © 2026 QRNote. All rights reserved.
+              </Text>
+              <View style={styles.footerLinkRow}>
+                <TouchableOpacity onPress={() => router.push('/privacy')}>
+                  <Text style={[styles.footerLink, { color: colors.primary }]}>Privacy Policy</Text>
+                </TouchableOpacity>
+                <Text style={{ color: colors.textMuted }}>•</Text>
+                <TouchableOpacity onPress={() => router.push('/terms')}>
+                  <Text style={[styles.footerLink, { color: colors.primary }]}>Terms of Service</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        </View>
+      );
+    }
+
+    // Web Landing Page
     return (
       <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header */}
         <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
           <View style={styles.headerLeft}>
             <Image source={LogoImage} style={{ width: 22, height: 22, marginRight: 8, borderRadius: 4 }} />
-            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>CarGuard</Text>
+            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>QRNote</Text>
           </View>
           <TouchableOpacity onPress={toggleTheme} style={[styles.themeBtn, { backgroundColor: colors.surfaceLight }]}>
             {theme === 'dark' ? <Sun size={18} color={colors.textPrimary} /> : <Moon size={18} color={colors.textPrimary} />}
@@ -189,7 +252,7 @@ export default function HomeScreen() {
               <GlassCard style={styles.mockupCard}>
                 <View style={styles.mockupTagHeader}>
                   <Image source={LogoImage} style={{ width: 16, height: 16, marginRight: 6, borderRadius: 3 }} />
-                  <Text style={[styles.mockupTagTitle, { color: colors.textPrimary }]}>CARGUARD SECURE PORTAL</Text>
+                  <Text style={[styles.mockupTagTitle, { color: colors.textPrimary }]}>QRNOTE SECURE PORTAL</Text>
                 </View>
                 <View style={[styles.mockupQR, { borderColor: colors.border }]}>
                   <QrCode size={110} color={colors.textPrimary} style={{ opacity: 0.8 }} />
@@ -203,45 +266,69 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Why CarGuard? Section */}
+          {/* Why QRNote? Section */}
           <View style={styles.sectionContainer}>
             <Text style={[styles.sectionHeading, { color: colors.textPrimary }]}>
-              Traditional Dashboard Note vs. CarGuard
+              Traditional Dashboard Note vs. QRNote
             </Text>
             <View style={[styles.comparisonGrid, isDesktop && styles.row, isDesktop && { gap: Spacing.md }]}>
               {/* Paper Note Card */}
               <View style={[styles.comparisonCard, { backgroundColor: colors.surface, borderColor: colors.border, flex: 1, marginBottom: isDesktop ? 0 : Spacing.md }]}>
                 <Text style={[styles.comparisonCardTitle, { color: colors.danger }]}>Handwritten Paper Note</Text>
                 <View style={styles.comparisonItem}>
-                  <Text style={styles.comparisonIcon}>❌</Text>
+                  <X size={18} color={colors.danger} style={{ marginTop: 2 }} />
                   <Text style={[styles.comparisonText, { color: colors.textSecondary }]}>Exposes your phone number to any passerby</Text>
                 </View>
                 <View style={styles.comparisonItem}>
-                  <Text style={styles.comparisonIcon}>❌</Text>
+                  <X size={18} color={colors.danger} style={{ marginTop: 2 }} />
                   <Text style={[styles.comparisonText, { color: colors.textSecondary }]}>High risk of spam calls, stalking, or harassment</Text>
                 </View>
                 <View style={styles.comparisonItem}>
-                  <Text style={styles.comparisonIcon}>❌</Text>
+                  <X size={18} color={colors.danger} style={{ marginTop: 2 }} />
                   <Text style={[styles.comparisonText, { color: colors.textSecondary }]}>Zero logs or tracking of who scanned your vehicle</Text>
                 </View>
               </View>
 
-              {/* CarGuard Card */}
+              {/* QRNote Card */}
               <GlassCard style={[styles.comparisonCardActive, { flex: 1 }]}>
-                <Text style={[styles.comparisonCardTitle, { color: colors.primary }]}>CarGuard Privacy Shield</Text>
+                <Text style={[styles.comparisonCardTitle, { color: colors.primary }]}>QRNote Privacy Shield</Text>
                 <View style={styles.comparisonItem}>
-                  <Text style={styles.comparisonIcon}>✓</Text>
+                  <Check size={18} color={colors.success} style={{ marginTop: 2 }} />
                   <Text style={[styles.comparisonText, { color: colors.textPrimary }]}>100% encrypted & hidden phone number</Text>
                 </View>
                 <View style={styles.comparisonItem}>
-                  <Text style={styles.comparisonIcon}>✓</Text>
+                  <Check size={18} color={colors.success} style={{ marginTop: 2 }} />
                   <Text style={[styles.comparisonText, { color: colors.textPrimary }]}>Verified license plate is required to reveal emergency number</Text>
                 </View>
                 <View style={styles.comparisonItem}>
-                  <Text style={styles.comparisonIcon}>✓</Text>
+                  <Check size={18} color={colors.success} style={{ marginTop: 2 }} />
                   <Text style={[styles.comparisonText, { color: colors.textPrimary }]}>Real-time push alerts sent straight to your dashboard</Text>
                 </View>
               </GlassCard>
+            </View>
+          </View>
+
+          {/* Example Windshield Posters Showcase */}
+          <View style={styles.sectionContainer}>
+            <Text style={[styles.sectionHeading, { color: colors.textPrimary }]}>
+              Customized Windshield Templates
+            </Text>
+            <Text style={{ fontSize: FontSize.xs + 2, color: colors.textSecondary, textAlign: 'center', marginBottom: Spacing.xl }}>
+              Choose and download professional templates in 9:16 layout matching your design aesthetics.
+            </Text>
+            <View style={styles.exampleGrid}>
+              <View style={[isDesktop ? styles.row : { flexDirection: 'column' }, { gap: Spacing.xl, justifyContent: 'center', width: '100%', alignItems: 'center' }]}>
+                <Image 
+                  source={Example1Image} 
+                  style={[styles.exampleImage, { width: 280, height: 497 }]} 
+                  contentFit="cover"
+                />
+                <Image 
+                  source={Example2Image} 
+                  style={[styles.exampleImage, { width: 280, height: 497 }]} 
+                  contentFit="cover"
+                />
+              </View>
             </View>
           </View>
 
@@ -329,7 +416,7 @@ export default function HomeScreen() {
             <View style={styles.faqList}>
               {[
                 {
-                  q: "Is CarGuard completely free?",
+                  q: "Is QRNote completely free?",
                   a: "Yes! Creating your account, adding vehicles, generating QR codes, and receiving alerts is 100% free with no monthly fees."
                 },
                 {
@@ -376,7 +463,7 @@ export default function HomeScreen() {
             <GlassCard style={styles.ctaCard}>
               <Text style={[styles.ctaTitle, { color: colors.textPrimary }]}>Protect your privacy on the road today</Text>
               <Text style={[styles.ctaDesc, { color: colors.textSecondary }]}>
-                Join thousands of drivers who secure their windshield contact details with CarGuard.
+                Join thousands of drivers who secure their windshield contact details with QRNote.
               </Text>
               <GradientButton
                 title="Create Free Account"
@@ -387,10 +474,19 @@ export default function HomeScreen() {
           </View>
 
           {/* Landing Footer */}
-          <View style={styles.landingFooter}>
+          <View style={[styles.landingFooter, { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: Spacing.md }]}>
             <Text style={[styles.footerText, { color: colors.textMuted }]}>
-              © 2026 CarGuard. All rights reserved. Privacy-First Vehicle Portal.
+              © 2026 QRNote. All rights reserved.
             </Text>
+            <View style={styles.footerLinkRow}>
+              <TouchableOpacity onPress={() => router.push('/privacy')}>
+                <Text style={[styles.footerLink, { color: colors.primary }]}>Privacy Policy</Text>
+              </TouchableOpacity>
+              <Text style={{ color: colors.textMuted }}>•</Text>
+              <TouchableOpacity onPress={() => router.push('/terms')}>
+                <Text style={[styles.footerLink, { color: colors.primary }]}>Terms of Service</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </ScrollView>
       </View>
@@ -404,7 +500,7 @@ export default function HomeScreen() {
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <View style={styles.headerLeft}>
           <Image source={LogoImage} style={{ width: 22, height: 22, marginRight: 8, borderRadius: 4 }} />
-          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>CarGuard</Text>
+          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>QRNote</Text>
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn} hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}>
@@ -915,5 +1011,68 @@ const styles = StyleSheet.create({
     borderRadius: 27,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  mobileWelcomeScroll: {
+    paddingHorizontal: Spacing.md,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xl,
+    flexGrow: 1,
+  },
+  mobileHero: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: Spacing.xl,
+    flex: 1,
+  },
+  mobileHeroImage: {
+    width: 280,
+    height: 280,
+    marginBottom: Spacing.lg,
+  },
+  mobileHeroTitle: {
+    fontSize: FontSize.lg + 4,
+    fontWeight: '800',
+    textAlign: 'center',
+    marginBottom: Spacing.sm,
+    letterSpacing: -0.5,
+  },
+  mobileHeroDesc: {
+    fontSize: FontSize.xs + 2,
+    textAlign: 'center',
+    lineHeight: 20,
+    paddingHorizontal: Spacing.md,
+    marginBottom: Spacing.xl,
+  },
+  mobileWelcomeBtn: {
+    width: '100%',
+    maxWidth: 240,
+  },
+  mobileFooter: {
+    marginTop: Spacing.xxl,
+    paddingVertical: Spacing.lg,
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  footerLinkRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: Spacing.md,
+    marginTop: Spacing.xs,
+  },
+  footerLink: {
+    fontSize: FontSize.xs + 1,
+    fontWeight: '600',
+  },
+  exampleGrid: {
+    gap: Spacing.lg,
+    marginTop: Spacing.md,
+    alignItems: 'center',
+  },
+  exampleImage: {
+    borderRadius: BorderRadius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+    ...Shadow.card,
   },
 });

@@ -96,7 +96,7 @@ export default function LoginScreen() {
 
           <View style={styles.header}>
             <View style={styles.headerIndicator} />
-            <Text style={styles.headerTitle}>CARGUARD SECURITY</Text>
+            <Text style={styles.headerTitle}>QRNOTE SECURITY</Text>
             <Text style={styles.headerSubtitle}>
               {isSignUp
                 ? 'Create a secure account to generate vehicle QR codes'

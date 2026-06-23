@@ -127,7 +127,7 @@ export default function QRViewScreen() {
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 36px monospace';
       ctx.textAlign = 'left';
-      ctx.fillText('CARGUARD SECURE', 370, 492);
+      ctx.fillText('QRNOTE SECURE', 370, 492);
 
       // 4. Load QR Code Image as PNG with native transparency from QuickChart
       const pngQrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrUrl)}&light=00000000&dark=00c9ff&ecLevel=H&size=460`;
@@ -168,7 +168,7 @@ export default function QRViewScreen() {
       // 8. Trigger Download
       const dataUrl = canvas.toDataURL('image/png');
       const link = document.createElement('a');
-      link.download = `carguard_${car.carNumber.replace(/\s+/g, '_')}.png`;
+      link.download = `qrnote_${car.carNumber.replace(/\s+/g, '_')}.png`;
       link.href = dataUrl;
       link.click();
     } catch (err) {
@@ -225,7 +225,7 @@ export default function QRViewScreen() {
             <View style={styles.qrCardGlass}>
               <View style={styles.qrHeaderRow}>
                 <Image source={LogoImage} style={styles.qrCardLogo} />
-                <Text style={styles.qrCardBranding}>CARGUARD SECURE</Text>
+                <Text style={styles.qrCardBranding}>QRNOTE SECURE</Text>
               </View>
               
               {/* The QR Code itself, with high ECC so we can overlay the logo */}
