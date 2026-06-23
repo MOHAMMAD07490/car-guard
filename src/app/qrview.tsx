@@ -136,10 +136,10 @@ export default function QRViewScreen() {
         ctx.fillStyle = '#FFFFFF';
         ctx.font = 'bold 36px monospace';
         ctx.textAlign = 'left';
-        ctx.fillText('QRNOTE SECURE', 370, 492);
+        ctx.fillText('QRNote', 370, 492);
 
         // 4. Load QR Code Image as PNG with native transparency from QuickChart
-        const pngQrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrUrl)}&light=ffffff&dark=000000&ecLevel=H&size=460`;
+        const pngQrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrUrl)}&light=ffffff&dark=000&ecLevel=H&size=460`;
         const qrImg = new window.Image();
         qrImg.crossOrigin = 'anonymous';
         await new Promise((resolve, reject) => {
@@ -164,20 +164,16 @@ export default function QRViewScreen() {
           ctx.restore();
         }
 
-        // 7. Draw Plate Number and Call to Action
+        // 7. Draw Call to Action
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'center';
-        ctx.font = 'bold 64px monospace';
-        ctx.fillText(car.carNumber, 540, 1250);
-
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.font = 'bold 36px sans-serif';
-        ctx.fillText('SCAN TO ALERT OWNER', 540, 1330);
+        ctx.font = 'bold 54px monospace';
+        ctx.fillText('SCAN TO ALERT OWNER', 540, 1250);
 
         // 8. Trigger Download
         const dataUrl = canvas.toDataURL('image/png');
         const link = document.createElement('a');
-        link.download = `qrnote_${car.carNumber.replace(/\s+/g, '_')}.png`;
+        link.download = `qrnote_poster.png`;
         link.href = dataUrl;
         link.click();
       } catch (err) {
@@ -262,7 +258,7 @@ export default function QRViewScreen() {
             <View style={styles.qrCardGlass}>
               <View style={styles.qrHeaderRow}>
                 <Image source={LogoImage} style={styles.qrCardLogo} />
-                <Text style={styles.qrCardBranding}>QRNOTE SECURE</Text>
+                <Text style={styles.qrCardBranding}>QRNote</Text>
               </View>
               
               {/* The QR Code itself, with high ECC so we can overlay the logo */}
@@ -286,8 +282,7 @@ export default function QRViewScreen() {
               </View>
               
               <View style={styles.qrFooterTextContainer}>
-                <Text style={styles.qrPlateText}>{car.carNumber}</Text>
-                <Text style={styles.qrNameText}>SCAN TO ALERT OWNER</Text>
+                <Text style={[styles.qrPlateText, { fontSize: FontSize.lg }]}>SCAN TO ALERT OWNER</Text>
               </View>
             </View>
           </ImageBackground>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { AlertMessage } from '../types/car';
 import { Spacing, FontSize, BorderRadius } from '../constants/theme';
 import { useAppTheme } from '../hooks/useAppTheme';
@@ -8,6 +8,7 @@ import GlassCard from './GlassCard';
 interface AlertItemProps {
   alert: AlertMessage;
   onPress: () => void;
+  loading?: boolean;
 }
 
 const ALERT_LABELS: Record<AlertMessage['alertType'], string> = {
@@ -32,7 +33,7 @@ function getRelativeTime(timestamp: number): string {
   return new Date(timestamp).toLocaleDateString();
 }
 
-export default function AlertItem({ alert, onPress }: AlertItemProps) {
+export default function AlertItem({ alert, onPress, loading }: AlertItemProps) {
   const { colors } = useAppTheme();
   const label = ALERT_LABELS[alert.alertType];
   const timeAgo = getRelativeTime(alert.timestamp);
@@ -47,7 +48,7 @@ export default function AlertItem({ alert, onPress }: AlertItemProps) {
 
   return (
     <GlassCard
-      onPress={onPress}
+      onPress={loading ? undefined : onPress}
       style={[
         styles.card,
         !alert.read && { borderColor: colors.primaryGlow, borderWidth: 1 }
@@ -86,13 +87,19 @@ export default function AlertItem({ alert, onPress }: AlertItemProps) {
           ) : null}
         </View>
 
-        {/* Unread indicator */}
-        {!alert.read && (
-          <View style={styles.unreadDotWrapper}>
-            <View style={[styles.unreadDotGlow, { backgroundColor: colors.primaryGlow }]} />
-            <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
-          </View>
-        )}
+        {/* Unread indicator / Loading indicator */}
+        <View style={styles.unreadDotWrapper}>
+          {loading ? (
+            <ActivityIndicator size="small" color={colors.primary} />
+          ) : (
+            !alert.read && (
+              <>
+                <View style={[styles.unreadDotGlow, { backgroundColor: colors.primaryGlow }]} />
+                <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
+              </>
+            )
+          )}
+        </View>
       </View>
     </GlassCard>
   );

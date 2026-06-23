@@ -254,16 +254,22 @@ export const getAlerts = async (): Promise<AlertMessage[]> => {
       });
       if (response.ok) {
         const { alerts } = await response.json();
+        // Merge cloud alerts with local ones, prioritizing local 'read' state to prevent flickering
+        const merged = alerts.map((cloudAlert: AlertMessage) => {
+          const localMatch = localAlerts.find(l => l.id === cloudAlert.id);
+          if (localMatch && localMatch.read) {
+            return { ...cloudAlert, read: true };
+          }
+          return cloudAlert;
+        });
         
-        // Merge cloud alerts with local ones, skipping duplicates
-        const merged = [...alerts];
         localAlerts.forEach(localAlert => {
-          if (!merged.some(cloudAlert => cloudAlert.id === localAlert.id)) {
+          if (!merged.some((cloudAlert: AlertMessage) => cloudAlert.id === localAlert.id)) {
             merged.push(localAlert);
           }
         });
         
-        merged.sort((a, b) => b.timestamp - a.timestamp);
+        merged.sort((a: AlertMessage, b: AlertMessage) => b.timestamp - a.timestamp);
         await safeSetItem(ALERTS_KEY, JSON.stringify(merged));
         return merged;
       }
@@ -312,11 +318,15 @@ export const markAllAlertsRead = async (): Promise<void> => {
   await safeSetItem(ALERTS_KEY, JSON.stringify(alerts));
 
   // Sync to cloud for each alert
+  const authHeaders = await getAuthHeaders();
   for (const alert of alerts) {
     try {
       await fetchWithTimeout(getApiUrl('/api/alerts'), {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...authHeaders,
+        },
         body: JSON.stringify({ alertId: alert.id, carId: alert.carId }),
       });
     } catch (error) {

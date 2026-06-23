@@ -6,6 +6,7 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
+  Animated,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Spacing, FontSize, BorderRadius } from '../constants/theme';
@@ -15,7 +16,36 @@ import AlertItem from '../components/AlertItem';
 import GlassCard from '../components/GlassCard';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { ArrowLeft } from 'lucide-react-native';
-import LoadingIndicator from '../components/LoadingIndicator';
+
+const SkeletonAlert = () => {
+  const { colors } = useAppTheme();
+  const pulseAnim = React.useRef(new Animated.Value(0.3)).current;
+
+  React.useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, { toValue: 0.7, duration: 800, useNativeDriver: true }),
+        Animated.timing(pulseAnim, { toValue: 0.3, duration: 800, useNativeDriver: true }),
+      ])
+    ).start();
+  }, [pulseAnim]);
+
+  return (
+    <GlassCard style={{ marginBottom: Spacing.sm, paddingLeft: Spacing.sm }}>
+      <Animated.View style={{ flexDirection: 'row', opacity: pulseAnim }}>
+        <View style={{ width: 3, borderRadius: 1.5, marginRight: Spacing.md, backgroundColor: colors.border }} />
+        <View style={{ flex: 1, paddingVertical: Spacing.xs }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: Spacing.sm }}>
+            <View style={{ width: 60, height: 18, backgroundColor: colors.border, borderRadius: 4 }} />
+            <View style={{ width: 40, height: 14, backgroundColor: colors.border, borderRadius: 4 }} />
+          </View>
+          <View style={{ width: '80%', height: 20, backgroundColor: colors.border, borderRadius: 4, marginBottom: 6 }} />
+          <View style={{ width: '50%', height: 20, backgroundColor: colors.border, borderRadius: 4 }} />
+        </View>
+      </Animated.View>
+    </GlassCard>
+  );
+};
 
 export default function AlertsScreen() {
   const router = useRouter();
@@ -24,6 +54,7 @@ export default function AlertsScreen() {
   const [alerts, setAlerts] = useState<AlertMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [markingReadId, setMarkingReadId] = useState<string | null>(null);
 
   const loadAlerts = useCallback(async () => {
     try {
@@ -56,13 +87,18 @@ export default function AlertsScreen() {
   };
 
   const handleAlertPress = async (alert: AlertMessage) => {
+    if (alert.read) return;
+    setMarkingReadId(alert.id);
     await markAlertRead(alert.id);
     await loadAlerts();
+    setMarkingReadId(null);
   };
 
   const handleMarkAllRead = async () => {
+    setMarkingReadId('all');
     await markAllAlertsRead();
     await loadAlerts();
+    setMarkingReadId(null);
   };
 
   if (!authChecked) {
@@ -89,51 +125,53 @@ export default function AlertsScreen() {
           Notifications from your QR codes.
         </Text>
         {alerts.some(a => !a.read) && (
-          <TouchableOpacity onPress={handleMarkAllRead}>
-            <Text style={[styles.markReadText, { color: colors.primary }]}>Mark all read</Text>
+          <TouchableOpacity onPress={markingReadId === 'all' ? undefined : handleMarkAllRead}>
+            <Text style={[styles.markReadText, { color: markingReadId === 'all' ? colors.textMuted : colors.primary }]}>
+              {markingReadId === 'all' ? 'Marking...' : 'Mark all read'}
+            </Text>
           </TouchableOpacity>
         )}
       </View>
 
-      {loading ? (
-        <View style={styles.centerContainer}>
-          <LoadingIndicator message="Loading alerts..." size={100} />
-        </View>
-      ) : (
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.primary}
-              colors={[colors.primary]}
-            />
-          }
-          showsVerticalScrollIndicator={false}
-        >
-          {alerts.length === 0 ? (
-            <GlassCard style={styles.emptyState}>
-              <View style={[styles.emptyDivider, { backgroundColor: colors.border }]} />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
+        showsVerticalScrollIndicator={false}
+      >
+        {loading ? (
+          <View style={styles.alertList}>
+            {[1, 2, 3].map(i => <SkeletonAlert key={i} />)}
+          </View>
+        ) : alerts.length === 0 ? (
+          <GlassCard style={styles.emptyState}>
+            <View style={[styles.emptyDivider, { backgroundColor: colors.border }]}>
               <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>NO NOTIFICATIONS</Text>
-              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-                Any alerts sent from scanned QR codes will appear here in chronological order.
-              </Text>
-            </GlassCard>
-          ) : (
-            <View style={styles.alertList}>
-              {alerts.map((alert) => (
-                <AlertItem
-                  key={alert.id}
-                  alert={alert}
-                  onPress={() => handleAlertPress(alert)}
-                />
-              ))}
             </View>
-          )}
-          <View style={{ height: 40 }} />
-        </ScrollView>
-      )}
+            <Text style={[styles.emptyText, { color: colors.textMuted }]}>
+              Any alerts sent from scanned QR codes will appear here in chronological order.
+            </Text>
+          </GlassCard>
+        ) : (
+          <View style={styles.alertList}>
+            {alerts.map((alert) => (
+              <AlertItem
+                key={alert.id}
+                alert={alert}
+                onPress={() => handleAlertPress(alert)}
+                loading={markingReadId === alert.id}
+              />
+            ))}
+          </View>
+        )}
+        <View style={{ height: 40 }} />
+      </ScrollView>
     </View>
   );
 }
