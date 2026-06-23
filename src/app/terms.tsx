@@ -64,6 +64,13 @@ export default function TermsScreen() {
           </Text>
         </GlassCard>
 
+        <GlassCard style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>5. Advertisements & Google AdMob</Text>
+          <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+            We integrate Google AdMob to display advertisements. These advertisements help fund the operational and server costs of the free QRNote application. By using this service, you consent to AdMob gathering necessary identifiers for ad tracking and personalization.
+          </Text>
+        </GlassCard>
+
         <View style={{ height: 40 }} />
       </ScrollView>
     </View>

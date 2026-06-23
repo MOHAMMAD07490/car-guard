@@ -64,6 +64,13 @@ export default function PrivacyScreen() {
           </Text>
         </GlassCard>
 
+        <GlassCard style={styles.card}>
+          <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>5. Advertisements & Google AdMob</Text>
+          <Text style={[styles.bodyText, { color: colors.textSecondary }]}>
+            We use Google AdMob to serve advertisements within the application to support the maintenance and operations of the QRNote platform. AdMob may collect and process device advertising identifiers to personalize your ad experience.
+          </Text>
+        </GlassCard>
+
         <View style={{ height: 40 }} />
       </ScrollView>
     </View>

@@ -19,6 +19,7 @@ import GlassCard from '../../components/GlassCard';
 import GradientButton from '../../components/GradientButton';
 import InputField from '../../components/InputField';
 import { useAppTheme } from '../../hooks/useAppTheme';
+import LoadingIndicator from '../../components/LoadingIndicator';
 import { 
   Shield, 
   ArrowLeft, 
@@ -41,6 +42,7 @@ export default function ScanScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
   const [qrData, setQrData] = useState<QRData | null>(null);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [selectedType, setSelectedType] = useState<typeof ALERT_TYPES[number]['type'] | null>(null);
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(false);
@@ -56,8 +58,19 @@ export default function ScanScreen() {
     if (data) {
       const decoded = decodeQRData(data);
       setQrData(decoded);
+      setDataLoaded(true);
+    } else {
+      setDataLoaded(true);
     }
   }, [data]);
+
+  if (!dataLoaded) {
+    return (
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <LoadingIndicator message="Loading vehicle profile..." size={100} />
+      </View>
+    );
+  }
 
   if (!qrData) {
     return (

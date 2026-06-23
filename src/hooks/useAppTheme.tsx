@@ -21,11 +21,11 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     getAppTheme().then((savedTheme) => {
       if (savedTheme) {
         setThemeState(savedTheme);
-      } else if (systemScheme === 'light' || systemScheme === 'dark') {
-        setThemeState(systemScheme);
+      } else {
+        setThemeState('light');
       }
     });
-  }, [systemScheme]);
+  }, []);
 
   const toggleTheme = async () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';

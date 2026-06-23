@@ -10,6 +10,7 @@ import {
   Animated,
   useWindowDimensions,
   Platform,
+  Linking,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -62,6 +63,22 @@ export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === 'web';
   const isDesktop = isWeb && width > 900;
+
+  const handleOpenPrivacy = () => {
+    if (Platform.OS === 'web') {
+      router.push('/privacy');
+    } else {
+      Linking.openURL('https://car-guard-kappa.vercel.app/privacy');
+    }
+  };
+
+  const handleOpenTerms = () => {
+    if (Platform.OS === 'web') {
+      router.push('/terms');
+    } else {
+      Linking.openURL('https://car-guard-kappa.vercel.app/terms');
+    }
+  };
 
   const loadData = useCallback(async () => {
     const currentUser = await getCurrentUser();
@@ -180,11 +197,11 @@ export default function HomeScreen() {
                 © 2026 QRNote. All rights reserved.
               </Text>
               <View style={styles.footerLinkRow}>
-                <TouchableOpacity onPress={() => router.push('/privacy')}>
+                <TouchableOpacity onPress={handleOpenPrivacy}>
                   <Text style={[styles.footerLink, { color: colors.primary }]}>Privacy Policy</Text>
                 </TouchableOpacity>
                 <Text style={{ color: colors.textMuted }}>•</Text>
-                <TouchableOpacity onPress={() => router.push('/terms')}>
+                <TouchableOpacity onPress={handleOpenTerms}>
                   <Text style={[styles.footerLink, { color: colors.primary }]}>Terms of Service</Text>
                 </TouchableOpacity>
               </View>
@@ -242,9 +259,6 @@ export default function HomeScreen() {
                   style={{ width: '100%', maxWidth: 240 }}
                 />
               </View>
-              <Text style={[styles.landingNotice, { color: colors.textMuted, textAlign: 'left', paddingHorizontal: 0, marginTop: Spacing.sm }]}>
-                ✓ Zero app install for observers.  ✓ Private & encrypted storage.
-              </Text>
             </View>
 
             {/* Hero Right side: Mockup of windshield tag */}
@@ -254,8 +268,8 @@ export default function HomeScreen() {
                   <Image source={LogoImage} style={{ width: 16, height: 16, marginRight: 6, borderRadius: 3 }} />
                   <Text style={[styles.mockupTagTitle, { color: colors.textPrimary }]}>QRNOTE SECURE PORTAL</Text>
                 </View>
-                <View style={[styles.mockupQR, { borderColor: colors.border }]}>
-                  <QrCode size={110} color={colors.textPrimary} style={{ opacity: 0.8 }} />
+                <View style={[styles.mockupQR, { borderColor: colors.border, padding: 0 }]}>
+                  <Image source={Example1Image} style={{ width: 140, height: 140, borderRadius: BorderRadius.md }} contentFit="cover" />
                 </View>
                 <Text style={[styles.mockupPlate, { color: colors.textPrimary }]}>JHHJ 8888</Text>
                 <View style={[styles.mockupBadge, { backgroundColor: colors.successLight, borderColor: colors.success }]}>
@@ -479,11 +493,11 @@ export default function HomeScreen() {
               © 2026 QRNote. All rights reserved.
             </Text>
             <View style={styles.footerLinkRow}>
-              <TouchableOpacity onPress={() => router.push('/privacy')}>
+              <TouchableOpacity onPress={handleOpenPrivacy}>
                 <Text style={[styles.footerLink, { color: colors.primary }]}>Privacy Policy</Text>
               </TouchableOpacity>
               <Text style={{ color: colors.textMuted }}>•</Text>
-              <TouchableOpacity onPress={() => router.push('/terms')}>
+              <TouchableOpacity onPress={handleOpenTerms}>
                 <Text style={[styles.footerLink, { color: colors.primary }]}>Terms of Service</Text>
               </TouchableOpacity>
             </View>
@@ -581,6 +595,22 @@ export default function HomeScreen() {
               />
             ))
           )}
+        </View>
+
+        {/* Dashboard Footer */}
+        <View style={[styles.mobileFooter, { borderTopWidth: 1, borderTopColor: colors.border, marginTop: Spacing.xl, paddingVertical: Spacing.md }]}>
+          <Text style={[styles.footerText, { color: colors.textMuted }]}>
+            © 2026 QRNote. All rights reserved.
+          </Text>
+          <View style={styles.footerLinkRow}>
+            <TouchableOpacity onPress={handleOpenPrivacy}>
+              <Text style={[styles.footerLink, { color: colors.primary }]}>Privacy Policy</Text>
+            </TouchableOpacity>
+            <Text style={{ color: colors.textMuted }}>•</Text>
+            <TouchableOpacity onPress={handleOpenTerms}>
+              <Text style={[styles.footerLink, { color: colors.primary }]}>Terms of Service</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={{ height: 100 }} />
