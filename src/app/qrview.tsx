@@ -19,7 +19,7 @@ import { encodeCarToQR, getBaseWebUrl } from '../utils/qr';
 import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
 import * as FileSystem from 'expo-file-system';
-import * as MediaLibrary from 'expo-media-library/legacy';
+import * as Sharing from 'expo-sharing';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { ArrowLeft, Shield } from 'lucide-react-native';
 import LoadingIndicator from '../components/LoadingIndicator';
@@ -187,28 +187,25 @@ export default function QRViewScreen() {
         setGenerating(false);
       }
     } else {
-      // Native APK Save to Gallery
+      // Native APK Save/Share logic (bypass MediaLibrary strict permissions)
       try {
         setGenerating(true);
-        const { status } = await MediaLibrary.requestPermissionsAsync(true);
-        if (status !== 'granted') {
-          showCustomAlert('Permission Denied', 'Storage permissions are required to save the QR code to your photo library.');
-          setGenerating(false);
-          return;
-        }
-
         const filename = `qrnote_car_${car.carNumber.replace(/\s+/g, '_')}.png`;
-        const fileUri = `${FileSystem.documentDirectory}${filename}`;
+        const fileUri = `${FileSystem.cacheDirectory}${filename}`;
         
         // High resolution QR code download
         const downloadUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&color=000000&bgcolor=FFFFFF&ecc=H&data=${encodeURIComponent(qrUrl)}`;
         const { uri } = await FileSystem.downloadAsync(downloadUrl, fileUri);
 
-        const asset = await MediaLibrary.createAssetAsync(uri);
-        if (asset) {
-          showCustomAlert('Saved Successfully', 'The windshield QR note has been saved to your photo gallery.');
+        const isAvailable = await Sharing.isAvailableAsync();
+        if (isAvailable) {
+          await Sharing.shareAsync(uri, {
+            mimeType: 'image/png',
+            dialogTitle: 'Save or Share your QR Note Poster',
+            UTI: 'public.png',
+          });
         } else {
-          showCustomAlert('Error', 'Failed to save QR note asset.');
+          showCustomAlert('Error', 'Sharing is not available on this device.');
         }
       } catch (e) {
         console.warn('Native download error:', e);
