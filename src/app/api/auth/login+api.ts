@@ -1,6 +1,9 @@
 import { list } from '@vercel/blob';
 
-const token = process.env.BLOB_READ_WRITE_TOKEN;
+const token = process.env.BLOB_READ_WRITE_TOKEN || 
+              process.env['BLOB_READ_WRITE_TOKEN'] || 
+              process.env.EXPO_PUBLIC_BLOB_READ_WRITE_TOKEN || 
+              process.env['EXPO_PUBLIC_BLOB_READ_WRITE_TOKEN'];
 
 // Simple encoding for credentials
 const encodePassword = (password: string): string => {
