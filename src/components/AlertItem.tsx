@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { AlertMessage } from '../types/car';
-import { Colors, Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { useAppTheme } from '../hooks/useAppTheme';
 import GlassCard from './GlassCard';
 
 interface AlertItemProps {
@@ -14,13 +15,6 @@ const ALERT_LABELS: Record<AlertMessage['alertType'], string> = {
   lights: 'Lights',
   emergency: 'Emergency',
   general: 'General',
-};
-
-const ALERT_COLORS: Record<AlertMessage['alertType'], string> = {
-  parking: Colors.primary,
-  lights: Colors.warning,
-  emergency: Colors.danger,
-  general: Colors.accent,
 };
 
 function getRelativeTime(timestamp: number): string {
@@ -39,14 +33,25 @@ function getRelativeTime(timestamp: number): string {
 }
 
 export default function AlertItem({ alert, onPress }: AlertItemProps) {
+  const { colors } = useAppTheme();
   const label = ALERT_LABELS[alert.alertType];
-  const color = ALERT_COLORS[alert.alertType];
   const timeAgo = getRelativeTime(alert.timestamp);
+
+  const alertColors: Record<AlertMessage['alertType'], string> = {
+    parking: colors.primary,
+    lights: colors.warning,
+    emergency: colors.danger,
+    general: colors.accent,
+  };
+  const color = alertColors[alert.alertType];
 
   return (
     <GlassCard
       onPress={onPress}
-      style={[styles.card, !alert.read && styles.unreadCard]}
+      style={[
+        styles.card,
+        !alert.read && { borderColor: colors.primaryGlow, borderWidth: 1 }
+      ]}
     >
       <View style={styles.row}>
         {/* Color Indicator Pillar */}
@@ -58,16 +63,23 @@ export default function AlertItem({ alert, onPress }: AlertItemProps) {
             <View style={[styles.badge, { borderColor: color }]}>
               <Text style={[styles.badgeText, { color }]}>{label}</Text>
             </View>
-            <Text style={styles.time}>{timeAgo}</Text>
+            <Text style={[styles.time, { color: colors.textMuted }]}>{timeAgo}</Text>
           </View>
           
-          <Text style={styles.message} numberOfLines={2}>
-            {alert.message}
+          <Text 
+            style={[
+              styles.message, 
+              { color: colors.textPrimary },
+              alert.read && { color: colors.textSecondary, fontWeight: 'normal' }
+            ]} 
+            numberOfLines={2}
+          >
+            New issue reported: {alert.message}
           </Text>
           
           {alert.senderNote ? (
-            <View style={styles.noteContainer}>
-              <Text style={styles.noteText} numberOfLines={1}>
+            <View style={[styles.noteContainer, { borderTopColor: colors.border }]}>
+              <Text style={[styles.noteText, { color: colors.textSecondary }]} numberOfLines={1}>
                 Note: {alert.senderNote}
               </Text>
             </View>
@@ -77,8 +89,8 @@ export default function AlertItem({ alert, onPress }: AlertItemProps) {
         {/* Unread indicator */}
         {!alert.read && (
           <View style={styles.unreadDotWrapper}>
-            <View style={styles.unreadDotGlow} />
-            <View style={styles.unreadDot} />
+            <View style={[styles.unreadDotGlow, { backgroundColor: colors.primaryGlow }]} />
+            <View style={[styles.unreadDot, { backgroundColor: colors.primary }]} />
           </View>
         )}
       </View>
@@ -90,10 +102,6 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: Spacing.sm,
     paddingLeft: Spacing.sm,
-  },
-  unreadCard: {
-    borderColor: Colors.primaryGlow,
-    borderWidth: 1,
   },
   row: {
     flexDirection: 'row',
@@ -128,23 +136,19 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
   },
   time: {
-    color: Colors.textMuted,
     fontSize: FontSize.xs,
   },
   message: {
-    color: Colors.textPrimary,
     fontSize: FontSize.md,
     lineHeight: 20,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   noteContainer: {
     marginTop: Spacing.xs,
     paddingTop: Spacing.xs,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: Colors.border,
   },
   noteText: {
-    color: Colors.textSecondary,
     fontSize: FontSize.sm,
   },
   unreadDotWrapper: {
@@ -160,12 +164,10 @@ const styles = StyleSheet.create({
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: Colors.primaryGlow,
   },
   unreadDot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.primary,
   },
 });

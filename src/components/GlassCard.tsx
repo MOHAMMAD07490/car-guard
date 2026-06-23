@@ -6,7 +6,8 @@ import {
   ViewStyle,
   StyleProp,
 } from 'react-native';
-import { Colors, Spacing, BorderRadius, Shadow } from '../constants/theme';
+import { Spacing, BorderRadius, Shadow } from '../constants/theme';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface GlassCardProps {
   children: React.ReactNode;
@@ -15,10 +16,19 @@ interface GlassCardProps {
 }
 
 export default function GlassCard({ children, style, onPress }: GlassCardProps) {
+  const { colors } = useAppTheme();
+  
   const content = (
-    <View style={[styles.card, style]}>
+    <View style={[
+      styles.card, 
+      { 
+        backgroundColor: colors.surface, 
+        borderColor: colors.border,
+      },
+      style
+    ]}>
       {/* Inner glow accent line */}
-      <View style={styles.glowAccent} />
+      <View style={[styles.glowAccent, { backgroundColor: colors.primary }]} />
       {children}
     </View>
   );
@@ -36,10 +46,8 @@ export default function GlassCard({ children, style, onPress }: GlassCardProps) 
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: Colors.glass,
-    borderRadius: BorderRadius.lg,
+    borderRadius: BorderRadius.xl, // rounded-3xl in the design
     borderWidth: 1,
-    borderColor: Colors.glassBorder,
     padding: Spacing.md,
     overflow: 'hidden',
     ...Shadow.card,
@@ -50,8 +58,7 @@ const styles = StyleSheet.create({
     left: Spacing.lg,
     right: Spacing.lg,
     height: 1,
-    backgroundColor: Colors.primaryLight,
-    opacity: 0.3,
+    opacity: 0.2,
     borderRadius: 1,
   },
 });

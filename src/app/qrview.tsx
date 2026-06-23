@@ -13,16 +13,19 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
 import { getCarById, getCurrentUser } from '../utils/storage';
 import { CarProfile } from '../types/car';
 import { encodeCarToQR, getBaseWebUrl } from '../utils/qr';
 import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
+import { useAppTheme } from '../hooks/useAppTheme';
+import { ArrowLeft, Shield, Copy, Share2, Search } from 'lucide-react-native';
 
 export default function QRViewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { colors } = useAppTheme();
   const [authChecked, setAuthChecked] = useState(false);
   const [car, setCar] = useState<CarProfile | null>(null);
   const [copied, setCopied] = useState(false);
@@ -46,8 +49,8 @@ export default function QRViewScreen() {
 
   if (!car) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorText}>Loading vehicle details...</Text>
+      <View style={[styles.centerContainer, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.textSecondary }]}>Loading vehicle details...</Text>
       </View>
     );
   }
@@ -83,74 +86,52 @@ export default function QRViewScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['rgba(99, 102, 241, 0.05)', 'transparent']}
-        style={styles.bgGradient}
-      />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.headerBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <TouchableOpacity 
+          onPress={() => router.replace('/')} 
+          style={styles.backBtn}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+        >
+          <ArrowLeft size={20} color={colors.textPrimary} />
+        </TouchableOpacity>
+        <Text style={[styles.headerBarTitle, { color: colors.textPrimary }]}>Vehicle QR Code</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Navigation */}
-        <TouchableOpacity style={styles.backButton} onPress={() => router.replace('/')}>
-          <Text style={styles.backText}>← Dashboard</Text>
-        </TouchableOpacity>
+        {/* QR Code Card */}
+        <View style={styles.qrCard}>
+          <View style={styles.qrShieldBadge}>
+            <Shield size={16} color="#71717A" />
+          </View>
+          <Image
+            source={qrImageUrl}
+            style={styles.qrImage}
+            contentFit="contain"
+            transition={400}
+          />
+          <Text style={styles.qrPlate}>{car.carNumber}</Text>
+          <Text style={styles.qrName}>{car.ownerName}</Text>
+        </View>
 
-        {/* Info Header */}
-        <View style={styles.header}>
-          <View style={styles.headerIndicator} />
-          <Text style={styles.title}>VEHICLE QR CODE</Text>
-          <Text style={styles.subtitle}>
-            Display this code on your dashboard. Observers can scan it to alert you regarding parking or lights without seeing your phone number.
+        {/* Security Status Box */}
+        <View style={[
+          styles.securityBox, 
+          { 
+            backgroundColor: colors.successLight, 
+            borderColor: colors.successLight,
+          }
+        ]}>
+          <Shield size={20} color={colors.success} />
+          <Text style={[styles.securityText, { color: colors.success }]}>
+            Phone number ({car.phoneNumber.replace(/.(?=.{4})/g, '*')}) is fully encrypted.
           </Text>
         </View>
-
-        {/* QR Display Card */}
-        <View style={styles.qrContainer}>
-          <LinearGradient
-            colors={[Colors.border, Colors.borderLight]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.qrBorder}
-          >
-            <View style={styles.qrWhiteBox}>
-              <Image
-                source={qrImageUrl}
-                style={styles.qrImage}
-                contentFit="contain"
-                transition={400}
-              />
-            </View>
-          </LinearGradient>
-        </View>
-
-        {/* Car Details Info */}
-        <GlassCard style={styles.carDetailsCard}>
-          <View style={styles.detailsHeader}>
-            <View style={styles.plateContainer}>
-              <Text style={styles.plateLabel}>PLATE</Text>
-              <Text style={styles.carNumber}>{car.carNumber}</Text>
-            </View>
-            <View style={styles.dividerVertical} />
-            <View style={styles.modelContainer}>
-              <Text style={styles.modelLabel}>VEHICLE</Text>
-              <Text style={styles.carModel}>
-                {car.carModel || 'Registered Car'}
-                {car.carColor ? ` (${car.carColor})` : ''}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.dividerHorizontal} />
-
-          <View style={styles.privacyIndicator}>
-            <Text style={styles.privacyDot}>●</Text>
-            <Text style={styles.privacyText}>
-              Phone number ({car.phoneNumber.replace(/.(?=.{4})/g, '*')}) is fully encrypted.
-            </Text>
-          </View>
-        </GlassCard>
 
         {/* Action Buttons */}
         <View style={styles.actions}>
@@ -158,29 +139,44 @@ export default function QRViewScreen() {
             title={copied ? 'Copied Link' : 'Copy Web Portal Link'}
             onPress={handleCopyLink}
             variant="primary"
+            icon={copied ? "✓" : "📋"}
           />
 
           <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.secondaryButton} onPress={handleShare}>
-              <Text style={styles.secondaryButtonText}>Share Portal</Text>
+            <TouchableOpacity 
+              style={[
+                styles.secondaryButton, 
+                { backgroundColor: colors.surface, borderColor: colors.border }
+              ]} 
+              onPress={handleShare}
+            >
+              <Share2 size={16} color={colors.textPrimary} />
+              <Text style={[styles.secondaryButtonText, { color: colors.textPrimary }]}>Share Portal</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.secondaryButton} onPress={handleSimulateScan}>
-              <Text style={styles.secondaryButtonText}>Simulate Scan</Text>
+            <TouchableOpacity 
+              style={[
+                styles.secondaryButton, 
+                { backgroundColor: colors.surface, borderColor: colors.border }
+              ]} 
+              onPress={handleSimulateScan}
+            >
+              <Search size={16} color={colors.textPrimary} />
+              <Text style={[styles.secondaryButtonText, { color: colors.textPrimary }]}>Simulate Scan</Text>
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Instructions */}
         <GlassCard style={styles.instructionsCard}>
-          <Text style={styles.instructionTitle}>SETUP INSTRUCTIONS</Text>
-          <Text style={styles.instructionStep}>
+          <Text style={[styles.instructionTitle, { color: colors.textPrimary }]}>SETUP INSTRUCTIONS</Text>
+          <Text style={[styles.instructionStep, { color: colors.textSecondary }]}>
             1. Print or download this QR code template.
           </Text>
-          <Text style={styles.instructionStep}>
+          <Text style={[styles.instructionStep, { color: colors.textSecondary }]}>
             2. Place the code clearly on your dashboard or corner windshield.
           </Text>
-          <Text style={styles.instructionStep}>
+          <Text style={[styles.instructionStep, { color: colors.textSecondary }]}>
             3. Observers scanning this QR can notify you securely from their phone browsers.
           </Text>
         </GlassCard>
@@ -194,144 +190,88 @@ export default function QRViewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
-  bgGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.md,
+    paddingTop: 50,
+    paddingBottom: Spacing.sm,
+    borderBottomWidth: 1,
+  },
+  backBtn: {
+    padding: 4,
+  },
+  headerBarTitle: {
+    fontSize: FontSize.md,
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: Colors.background,
   },
   errorText: {
-    color: Colors.textSecondary,
     fontSize: FontSize.md,
   },
   scrollContent: {
     paddingHorizontal: Spacing.md,
-    paddingTop: 60,
-    paddingBottom: 40,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xl,
   },
-  backButton: {
-    marginBottom: Spacing.md,
-    paddingVertical: Spacing.xs,
-  },
-  backText: {
-    fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    fontWeight: '600',
-  },
-  header: {
-    alignItems: 'flex-start',
-    marginBottom: Spacing.lg,
-  },
-  headerIndicator: {
-    width: 20,
-    height: 3,
-    backgroundColor: Colors.accent,
-    borderRadius: 1.5,
-    marginBottom: Spacing.sm,
-  },
-  title: {
-    fontSize: FontSize.xl,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    letterSpacing: 2,
-  },
-  subtitle: {
-    fontSize: FontSize.xs + 1,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
-    lineHeight: 16,
-  },
-  qrContainer: {
+  qrCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: Spacing.md,
-  },
-  qrBorder: {
-    padding: 1,
-    borderRadius: BorderRadius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(24, 24, 27, 0.08)',
+    marginBottom: Spacing.md,
+    position: 'relative',
     ...Shadow.card,
   },
-  qrWhiteBox: {
-    backgroundColor: Colors.qrBackground,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md - 1,
+  qrShieldBadge: {
+    position: 'absolute',
+    top: Spacing.md,
+    right: Spacing.md,
+    padding: 6,
+    backgroundColor: '#F4F4F5',
+    borderRadius: BorderRadius.round,
   },
   qrImage: {
     width: 200,
     height: 200,
-  },
-  carDetailsCard: {
-    marginTop: Spacing.md,
     marginBottom: Spacing.lg,
-    borderWidth: 1,
-    borderColor: Colors.border,
   },
-  detailsHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  plateContainer: {
-    flex: 1,
-  },
-  plateLabel: {
-    fontSize: FontSize.xs - 2,
+  qrPlate: {
+    fontFamily: 'monospace',
+    fontSize: FontSize.xl - 2,
     fontWeight: '800',
-    color: Colors.textMuted,
-    letterSpacing: 1.5,
+    letterSpacing: 2,
+    color: '#18181B',
   },
-  carNumber: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.lg,
+  qrName: {
+    fontSize: FontSize.xs,
     fontWeight: '700',
-    marginTop: 2,
-  },
-  dividerVertical: {
-    width: 1,
-    height: 30,
-    backgroundColor: Colors.border,
-    marginHorizontal: Spacing.md,
-  },
-  modelContainer: {
-    flex: 2,
-  },
-  modelLabel: {
-    fontSize: FontSize.xs - 2,
-    fontWeight: '800',
-    color: Colors.textMuted,
+    color: '#71717A',
     letterSpacing: 1.5,
-  },
-  carModel: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.sm,
-    fontWeight: '600',
     marginTop: 2,
+    textTransform: 'uppercase',
   },
-  dividerHorizontal: {
-    height: 1,
-    backgroundColor: Colors.border,
-    marginVertical: Spacing.md,
-  },
-  privacyIndicator: {
+  securityBox: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: Spacing.sm,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    borderWidth: 1,
+    marginBottom: Spacing.lg,
   },
-  privacyDot: {
-    color: Colors.success,
-    fontSize: 10,
-  },
-  privacyText: {
-    color: Colors.success,
-    fontSize: FontSize.xs,
+  securityText: {
+    fontSize: FontSize.xs + 1,
     fontWeight: '600',
     flex: 1,
   },
@@ -345,34 +285,31 @@ const styles = StyleSheet.create({
   },
   secondaryButton: {
     flex: 1,
-    backgroundColor: Colors.surfaceLight,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderRadius: BorderRadius.lg,
-    paddingVertical: Spacing.md,
+    paddingVertical: Spacing.md - 2,
     alignItems: 'center',
     justifyContent: 'center',
+    flexDirection: 'row',
+    gap: Spacing.sm,
     height: 52,
   },
   secondaryButtonText: {
-    color: Colors.textPrimary,
-    fontSize: FontSize.sm,
+    fontSize: FontSize.sm + 1,
     fontWeight: '600',
   },
   instructionsCard: {
     padding: Spacing.md,
     borderWidth: 1,
-    borderColor: Colors.border,
+    borderRadius: BorderRadius.xl,
   },
   instructionTitle: {
-    color: Colors.textPrimary,
     fontSize: FontSize.xs,
     fontWeight: '800',
     letterSpacing: 1.5,
-    marginBottom: Spacing.sm,
+    marginBottom: Spacing.md,
   },
   instructionStep: {
-    color: Colors.textSecondary,
     fontSize: FontSize.xs + 1,
     lineHeight: 18,
     marginBottom: Spacing.xs,

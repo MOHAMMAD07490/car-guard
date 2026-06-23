@@ -1,13 +1,13 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   TextInput,
   StyleSheet,
-  Animated,
   KeyboardTypeOptions,
 } from 'react-native';
-import { Colors, Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { useAppTheme } from '../hooks/useAppTheme';
 
 interface InputFieldProps {
   label: string;
@@ -31,71 +31,71 @@ export default function InputField({
   maxLength,
 }: InputFieldProps) {
   const [isFocused, setIsFocused] = useState(false);
-  const borderAnim = useRef(new Animated.Value(0)).current;
+  const { colors } = useAppTheme();
 
   const handleFocus = () => {
     setIsFocused(true);
-    Animated.timing(borderAnim, {
-      toValue: 1,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
   };
 
   const handleBlur = () => {
     setIsFocused(false);
-    Animated.timing(borderAnim, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start();
   };
 
-  const borderColor = error
-    ? Colors.danger
-    : borderAnim.interpolate({
-        inputRange: [0, 1],
-        outputRange: [Colors.border, Colors.primary],
-      });
+  // Determine current styles based on state and theme
+  const currentBorderColor = error
+    ? colors.danger
+    : isFocused
+    ? colors.primary
+    : colors.border;
+
+  const currentBgColor = error
+    ? colors.dangerLight
+    : isFocused
+    ? colors.surfaceLight
+    : colors.surface;
 
   return (
     <View style={styles.container}>
       {/* Label */}
-      <Text style={[styles.label, error && styles.labelError]}>
+      <Text style={[
+        styles.label, 
+        { color: error ? colors.danger : colors.textSecondary }
+      ]}>
         {icon ? `${icon}  ` : ''}
         {label}
       </Text>
 
-      {/* Input */}
-      <Animated.View
+      {/* Input Wrapper */}
+      <View
         style={[
           styles.inputWrapper,
-          { borderColor },
-          isFocused && styles.inputFocused,
-          error && styles.inputError,
+          { 
+            borderColor: currentBorderColor,
+            backgroundColor: currentBgColor,
+          }
         ]}
       >
         <TextInput
-          style={styles.input}
+          style={[styles.input, { color: colors.textPrimary }]}
           value={value}
           onChangeText={onChangeText}
           placeholder={placeholder}
-          placeholderTextColor={Colors.textMuted}
+          placeholderTextColor={colors.textMuted}
           keyboardType={keyboardType}
           onFocus={handleFocus}
           onBlur={handleBlur}
           maxLength={maxLength}
-          selectionColor={Colors.primary}
+          selectionColor={colors.primary}
         />
         {maxLength && value.length > 0 && (
-          <Text style={styles.counter}>
+          <Text style={[styles.counter, { color: colors.textMuted }]}>
             {value.length}/{maxLength}
           </Text>
         )}
-      </Animated.View>
+      </View>
 
       {/* Error message */}
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? <Text style={[styles.errorText, { color: colors.danger }]}>{error}</Text> : null}
     </View>
   );
 }
@@ -105,44 +105,28 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.md,
   },
   label: {
-    color: Colors.textSecondary,
     fontSize: FontSize.sm,
     fontWeight: '600',
     marginBottom: Spacing.xs,
     letterSpacing: 0.3,
   },
-  labelError: {
-    color: Colors.danger,
-  },
   inputWrapper: {
-    backgroundColor: Colors.surfaceLight,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.xl, // rounded-2xl in design
     borderWidth: 1.5,
-    borderColor: Colors.border,
     flexDirection: 'row',
     alignItems: 'center',
   },
-  inputFocused: {
-    backgroundColor: Colors.surfaceLighter,
-  },
-  inputError: {
-    borderColor: Colors.danger,
-    backgroundColor: Colors.dangerLight,
-  },
   input: {
     flex: 1,
-    color: Colors.textPrimary,
     fontSize: FontSize.md,
     paddingVertical: Spacing.md - 2,
     paddingHorizontal: Spacing.md,
   },
   counter: {
-    color: Colors.textMuted,
     fontSize: FontSize.xs,
     marginRight: Spacing.md,
   },
   errorText: {
-    color: Colors.danger,
     fontSize: FontSize.xs,
     marginTop: Spacing.xs,
     marginLeft: Spacing.xs,

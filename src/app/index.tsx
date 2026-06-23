@@ -11,16 +11,30 @@ import {
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
 import { getCars, deleteCar, getUnreadCount, getCurrentUser, logout } from '../utils/storage';
 import { CarProfile } from '../types/car';
 import { UserProfile } from '../types/user';
 import CarCard from '../components/CarCard';
 import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
+import { useAppTheme } from '../hooks/useAppTheme';
+import {
+  Shield,
+  Moon,
+  Sun,
+  Plus,
+  Car,
+  Bell,
+  LogOut,
+  QrCode,
+  AlertTriangle,
+  MessageSquare,
+} from 'lucide-react-native';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { theme, toggleTheme, colors } = useAppTheme();
   const [user, setUser] = useState<UserProfile | null>(null);
   const [cars, setCars] = useState<CarProfile[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -97,50 +111,63 @@ export default function HomeScreen() {
   if (!user) {
     // Unauthenticated View
     return (
-      <View style={styles.container}>
-        <LinearGradient
-          colors={['rgba(99, 102, 241, 0.05)', 'transparent']}
-          style={styles.bgGradient}
-        />
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        {/* Header */}
+        <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+          <View style={styles.headerLeft}>
+            <Shield size={22} color={colors.primary} />
+            <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>CarGuard</Text>
+          </View>
+          <TouchableOpacity onPress={toggleTheme} style={[styles.themeBtn, { backgroundColor: colors.surfaceLight }]}>
+            {theme === 'dark' ? <Sun size={18} color={colors.textPrimary} /> : <Moon size={18} color={colors.textPrimary} />}
+          </TouchableOpacity>
+        </View>
+
         <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
           <View style={styles.landingHeader}>
-            <View style={styles.headerIndicator} />
-            <Text style={styles.landingTitle}>CARGUARD</Text>
-            <Text style={styles.landingSubtitle}>Secure, Privacy-First Vehicle Portal</Text>
+            <View style={[styles.headerIndicator, { backgroundColor: colors.primary }]} />
+            <Text style={[styles.landingTitle, { color: colors.textPrimary }]}>CARGUARD</Text>
+            <Text style={[styles.landingSubtitle, { color: colors.primary }]}>Secure, Privacy-First Vehicle Portal</Text>
           </View>
 
           <GlassCard style={styles.introCard}>
-            <Text style={styles.introHeader}>Protect Your Personal Identity</Text>
-            <Text style={styles.introText}>
-              Keep your phone number and full license plate hidden behind secure, customized dashboard QR codes. 
+            <Text style={[styles.introHeader, { color: colors.textPrimary }]}>Protect Your Personal Identity</Text>
+            <Text style={[styles.introText, { color: colors.textSecondary }]}>
+              Keep your phone number and full license plate hidden behind secure, customized dashboard QR codes.
             </Text>
-            <Text style={styles.introText}>
+            <Text style={[styles.introText, { color: colors.textSecondary }]}>
               Observers can alert you immediately regarding double parking, lights left on, or emergency situations without accessing your personal contact details.
             </Text>
           </GlassCard>
 
           <View style={styles.featuresList}>
             <View style={styles.featureItem}>
-              <Text style={styles.featureDot}>●</Text>
+              <View style={[styles.featureIconContainer, { backgroundColor: colors.primaryGlow }]}>
+                <QrCode size={20} color={colors.primary} />
+              </View>
               <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Secure QR Generator</Text>
-                <Text style={styles.featureDesc}>Create beautiful QR tags to print and display on your windshield.</Text>
+                <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Secure QR Generator</Text>
+                <Text style={[styles.featureDesc, { color: colors.textMuted }]}>Create beautiful QR tags to print and display on your windshield.</Text>
               </View>
             </View>
 
             <View style={styles.featureItem}>
-              <Text style={styles.featureDot}>●</Text>
+              <View style={[styles.featureIconContainer, { backgroundColor: colors.primaryGlow }]}>
+                <MessageSquare size={20} color={colors.primary} />
+              </View>
               <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Anonymous Messaging</Text>
-                <Text style={styles.featureDesc}>Receive real-time notifications securely through your app dashboard inbox.</Text>
+                <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Anonymous Messaging</Text>
+                <Text style={[styles.featureDesc, { color: colors.textMuted }]}>Receive real-time notifications securely through your app dashboard inbox.</Text>
               </View>
             </View>
 
             <View style={styles.featureItem}>
-              <Text style={styles.featureDot}>●</Text>
+              <View style={[styles.featureIconContainer, { backgroundColor: colors.primaryGlow }]}>
+                <AlertTriangle size={20} color={colors.primary} />
+              </View>
               <View style={styles.featureContent}>
-                <Text style={styles.featureTitle}>Emergency Verification Wall</Text>
-                <Text style={styles.featureDesc}>Phone numbers are only revealed if the observer verifies the full vehicle plate.</Text>
+                <Text style={[styles.featureTitle, { color: colors.textPrimary }]}>Emergency Verification Wall</Text>
+                <Text style={[styles.featureDesc, { color: colors.textMuted }]}>Phone numbers are only revealed if the observer verifies the full vehicle plate.</Text>
               </View>
             </View>
           </View>
@@ -150,7 +177,7 @@ export default function HomeScreen() {
               title="Get Started / Sign In"
               onPress={() => router.push('/login')}
             />
-            <Text style={styles.landingNotice}>
+            <Text style={[styles.landingNotice, { color: colors.textMuted }]}>
               Visitors can scan your QR and send alerts securely without needing an account.
             </Text>
           </View>
@@ -161,65 +188,79 @@ export default function HomeScreen() {
 
   // Authenticated View
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <View style={styles.headerLeft}>
+          <Shield size={22} color={colors.primary} />
+          <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>CarGuard</Text>
+        </View>
+        <View style={styles.headerRight}>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutBtn} hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}>
+            <LogOut size={18} color={colors.textSecondary} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={toggleTheme} style={[styles.themeBtn, { backgroundColor: colors.surfaceLight }]}>
+            {theme === 'dark' ? <Sun size={18} color={colors.textPrimary} /> : <Moon size={18} color={colors.textPrimary} />}
+          </TouchableOpacity>
+        </View>
+      </View>
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            tintColor={Colors.primary}
-            colors={[Colors.primary]}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
           />
         }
         showsVerticalScrollIndicator={false}
       >
         {/* Modern Minimal Header */}
         <Animated.View style={[styles.heroSection, { opacity: fadeAnim }]}>
-          <LinearGradient
-            colors={['rgba(99, 102, 241, 0.08)', 'transparent']}
-            style={styles.heroBg}
-          />
-          <View style={styles.authHeaderTop}>
-            <View style={styles.headerIndicator} />
-            <TouchableOpacity onPress={handleLogout}>
-              <Text style={styles.signOutText}>Sign Out</Text>
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.heroTitle}>CARGUARD</Text>
-          <Text style={styles.heroSubtitle}>Welcome back, {user.name}</Text>
+          <Text style={[styles.heroSubtitle, { color: colors.textSecondary }]}>Welcome back,</Text>
+          <Text style={[styles.heroTitle, { color: colors.textPrimary }]}>{user.name}</Text>
         </Animated.View>
 
         {/* Stats Row */}
         <View style={styles.statsRow}>
-          <GlassCard style={styles.statCard}>
-            <Text style={styles.statNumber}>{cars.length}</Text>
-            <Text style={styles.statLabel}>VEHICLES</Text>
-          </GlassCard>
+          {/* Stat Card 1 */}
+          <TouchableOpacity 
+            activeOpacity={0.8}
+            onPress={() => {}}
+            style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+          >
+            <View style={[styles.statIconContainer, { backgroundColor: colors.primaryGlow }]}>
+              <Car size={20} color={colors.primary} />
+            </View>
+            <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{cars.length}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>VEHICLES</Text>
+          </TouchableOpacity>
           
+          {/* Stat Card 2 */}
           <TouchableOpacity
             onPress={() => router.push('/alerts')}
             activeOpacity={0.8}
-            style={styles.statPressable}
+            style={[styles.statCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
           >
-            <GlassCard style={styles.statCard}>
-              <View style={styles.statWithBadge}>
-                <Text style={styles.statNumber}>{unreadCount}</Text>
-                {unreadCount > 0 && <View style={styles.badge} />}
-              </View>
-              <Text style={styles.statLabel}>NEW ALERTS</Text>
-            </GlassCard>
+            {unreadCount > 0 && <View style={[styles.badge, { backgroundColor: colors.danger }]} />}
+            <View style={[styles.statIconContainer, { backgroundColor: colors.surfaceLight }]}>
+              <Bell size={20} color={colors.textSecondary} />
+            </View>
+            <Text style={[styles.statNumber, { color: colors.textPrimary }]}>{unreadCount}</Text>
+            <Text style={[styles.statLabel, { color: colors.textSecondary }]}>NEW ALERTS</Text>
           </TouchableOpacity>
         </View>
 
         {/* Cars Section */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>MY CARS</Text>
+          <Text style={[styles.sectionTitle, { color: colors.textSecondary }]}>MY CARS</Text>
           {cars.length === 0 ? (
             <GlassCard style={styles.emptyState}>
-              <View style={styles.emptyLogoLine} />
-              <Text style={styles.emptyTitle}>NO REGISTERED CARS</Text>
-              <Text style={styles.emptyText}>
+              <View style={[styles.emptyLogoLine, { backgroundColor: colors.border }]} />
+              <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>NO REGISTERED CARS</Text>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
                 Register your vehicle to generate a privacy-safe QR code.
               </Text>
             </GlassCard>
@@ -245,12 +286,12 @@ export default function HomeScreen() {
         activeOpacity={0.85}
       >
         <LinearGradient
-          colors={[Colors.primary, Colors.accent]}
+          colors={[colors.primary, colors.primaryDark]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.fabGradient}
         >
-          <Text style={styles.fabText}>+</Text>
+          <Plus size={24} color="#FFFFFF" />
         </LinearGradient>
       </TouchableOpacity>
     </View>
@@ -260,54 +301,79 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
   },
-  bgGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: Spacing.md,
+    paddingTop: 50,
+    paddingBottom: Spacing.sm,
+    borderBottomWidth: 1,
+  },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.sm,
+  },
+  headerTitle: {
+    fontSize: FontSize.lg,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.md,
+  },
+  themeBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  logoutBtn: {
+    padding: 6,
   },
   scrollContent: {
     paddingHorizontal: Spacing.md,
-    paddingTop: 60,
-    paddingBottom: 40,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xl,
   },
   landingHeader: {
     alignItems: 'flex-start',
     marginBottom: Spacing.xl,
     paddingHorizontal: Spacing.xs,
   },
+  headerIndicator: {
+    width: 20,
+    height: 3,
+    borderRadius: 1.5,
+    marginBottom: Spacing.sm,
+  },
   landingTitle: {
     fontSize: FontSize.xxl,
     fontWeight: '900',
-    color: Colors.textPrimary,
-    letterSpacing: 4,
+    letterSpacing: 2,
   },
   landingSubtitle: {
     fontSize: FontSize.xs,
     textTransform: 'uppercase',
-    color: Colors.accentLight,
-    letterSpacing: 1.5,
+    letterSpacing: 1,
     marginTop: Spacing.xs,
-    fontWeight: '600',
+    fontWeight: '700',
   },
   introCard: {
-    borderWidth: 1,
-    borderColor: Colors.border,
     marginBottom: Spacing.xl,
   },
   introHeader: {
-    color: Colors.textPrimary,
     fontSize: FontSize.md,
     fontWeight: '700',
     marginBottom: Spacing.sm,
-    letterSpacing: 0.5,
   },
   introText: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.xs + 1,
+    fontSize: FontSize.sm,
     lineHeight: 18,
     marginBottom: Spacing.sm,
   },
@@ -318,25 +384,25 @@ const styles = StyleSheet.create({
   },
   featureItem: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: Spacing.md,
   },
-  featureDot: {
-    color: Colors.accentLight,
-    fontSize: 10,
-    marginTop: 4,
+  featureIconContainer: {
+    width: 42,
+    height: 42,
+    borderRadius: BorderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   featureContent: {
     flex: 1,
   },
   featureTitle: {
-    color: Colors.textPrimary,
     fontSize: FontSize.sm,
     fontWeight: '700',
     marginBottom: 2,
   },
   featureDesc: {
-    color: Colors.textMuted,
     fontSize: FontSize.xs,
     lineHeight: 16,
   },
@@ -345,131 +411,92 @@ const styles = StyleSheet.create({
     gap: Spacing.md,
   },
   landingNotice: {
-    color: Colors.textMuted,
     fontSize: FontSize.xs - 1,
     textAlign: 'center',
     lineHeight: 14,
     paddingHorizontal: Spacing.xl,
   },
   heroSection: {
-    alignItems: 'center',
-    paddingVertical: Spacing.xl,
-    position: 'relative',
-  },
-  heroBg: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-    borderRadius: BorderRadius.xl,
-  },
-  authHeaderTop: {
-    width: '100%',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: Spacing.sm,
-    marginBottom: Spacing.md,
-  },
-  signOutText: {
-    color: Colors.textSecondary,
-    fontSize: FontSize.xs,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  headerIndicator: {
-    width: 24,
-    height: 3,
-    backgroundColor: Colors.accent,
-    borderRadius: 1.5,
-  },
-  heroTitle: {
-    fontSize: FontSize.xxl,
-    fontWeight: '900',
-    color: Colors.textPrimary,
-    letterSpacing: 4,
+    paddingVertical: Spacing.lg,
+    paddingHorizontal: Spacing.xs,
   },
   heroSubtitle: {
-    fontSize: FontSize.xs,
-    textTransform: 'uppercase',
-    color: Colors.textSecondary,
-    letterSpacing: 1,
-    marginTop: Spacing.xs,
+    fontSize: FontSize.sm,
+    fontWeight: '500',
+  },
+  heroTitle: {
+    fontSize: FontSize.xxl - 2,
+    fontWeight: '800',
+    marginTop: 2,
   },
   statsRow: {
     flexDirection: 'row',
     gap: Spacing.md,
-    marginTop: Spacing.lg,
-  },
-  statPressable: {
-    flex: 1,
+    marginTop: Spacing.md,
+    marginBottom: Spacing.lg,
   },
   statCard: {
     flex: 1,
-    alignItems: 'center',
-    paddingVertical: Spacing.md,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.xl, // rounded-3xl
     borderWidth: 1,
-    borderColor: Colors.border,
+    position: 'relative',
+    ...Shadow.card,
   },
-  statWithBadge: {
-    flexDirection: 'row',
+  statIconContainer: {
+    width: 36,
+    height: 36,
+    borderRadius: BorderRadius.md,
     alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.sm,
   },
   statNumber: {
     fontSize: FontSize.xxl,
     fontWeight: '700',
-    color: Colors.textPrimary,
   },
   statLabel: {
     fontSize: FontSize.xs - 2,
     fontWeight: '700',
-    color: Colors.textSecondary,
-    letterSpacing: 1.5,
-    marginTop: Spacing.xs,
+    letterSpacing: 1,
+    marginTop: 2,
   },
   badge: {
+    position: 'absolute',
+    top: Spacing.md,
+    right: Spacing.md,
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: Colors.danger,
-    marginLeft: 6,
-    marginTop: -8,
   },
   section: {
-    marginTop: Spacing.xl,
+    marginTop: Spacing.md,
   },
   sectionTitle: {
     fontSize: FontSize.xs,
     fontWeight: '800',
-    color: Colors.textSecondary,
-    letterSpacing: 2,
+    letterSpacing: 1.5,
     marginBottom: Spacing.md,
   },
   emptyState: {
     alignItems: 'center',
     paddingVertical: Spacing.xl,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderStyle: 'dashed',
   },
   emptyLogoLine: {
     width: 32,
     height: 1.5,
-    backgroundColor: Colors.border,
     marginBottom: Spacing.md,
   },
   emptyTitle: {
     fontSize: FontSize.sm,
     fontWeight: '700',
-    color: Colors.textPrimary,
     letterSpacing: 1,
     marginBottom: Spacing.xs,
   },
   emptyText: {
     fontSize: FontSize.xs,
-    color: Colors.textMuted,
     textAlign: 'center',
     paddingHorizontal: Spacing.lg,
     lineHeight: 16,
@@ -486,11 +513,5 @@ const styles = StyleSheet.create({
     borderRadius: 27,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  fabText: {
-    fontSize: 28,
-    fontWeight: '300',
-    color: '#FFFFFF',
-    marginTop: -2,
   },
 });

@@ -10,15 +10,17 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../constants/theme';
 import { saveCar, getCurrentUser } from '../utils/storage';
 import { generateId } from '../utils/qr';
 import InputField from '../components/InputField';
 import GradientButton from '../components/GradientButton';
+import { useAppTheme } from '../hooks/useAppTheme';
+import { ArrowLeft } from 'lucide-react-native';
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { colors } = useAppTheme();
   const [authChecked, setAuthChecked] = useState(false);
   const [ownerName, setOwnerName] = useState('');
   const [carNumber, setCarNumber] = useState('');
@@ -81,11 +83,20 @@ export default function RegisterScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['rgba(99, 102, 241, 0.05)', 'transparent']}
-        style={styles.bgGradient}
-      />
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.headerBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <TouchableOpacity 
+          onPress={() => router.back()} 
+          style={styles.backBtn}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+        >
+          <ArrowLeft size={20} color={colors.textPrimary} />
+        </TouchableOpacity>
+        <Text style={[styles.headerBarTitle, { color: colors.textPrimary }]}>Register Vehicle</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.flex}
@@ -95,24 +106,12 @@ export default function RegisterScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Header */}
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Text style={styles.backText}>← Back</Text>
-          </TouchableOpacity>
-
-          <Animated.View style={[styles.header, { opacity: fadeAnim }]}>
-            <View style={styles.headerIndicator} />
-            <Text style={styles.headerTitle}>REGISTER VEHICLE</Text>
-            <Text style={styles.headerSubtitle}>
-              Link your vehicle details to generate a secure, privacy-safe QR code
-            </Text>
-          </Animated.View>
+          <Text style={[styles.descText, { color: colors.textSecondary }]}>
+            Link your vehicle details to generate a secure, privacy-safe QR code.
+          </Text>
 
           {/* Form */}
-          <Animated.View style={[styles.form, { opacity: fadeAnim }]}>
+          <View style={styles.form}>
             <InputField
               label="Owner Name"
               value={ownerName}
@@ -135,21 +134,29 @@ export default function RegisterScreen() {
               keyboardType="phone-pad"
               error={errors.phoneNumber}
             />
-            <InputField
-              label="Vehicle Model (Optional)"
-              value={carModel}
-              onChangeText={setCarModel}
-              placeholder="e.g. Tesla Model 3"
-            />
-            <InputField
-              label="Vehicle Color (Optional)"
-              value={carColor}
-              onChangeText={setCarColor}
-              placeholder="e.g. Space Grey"
-            />
+
+            {/* Optional Fields side by side */}
+            <View style={styles.rowGrid}>
+              <View style={styles.gridCol}>
+                <InputField
+                  label="Model (Optional)"
+                  value={carModel}
+                  onChangeText={setCarModel}
+                  placeholder="e.g. Model 3"
+                />
+              </View>
+              <View style={styles.gridCol}>
+                <InputField
+                  label="Color (Optional)"
+                  value={carColor}
+                  onChangeText={setCarColor}
+                  placeholder="e.g. White"
+                />
+              </View>
+            </View>
 
             {errors.general && (
-              <Text style={styles.generalError}>{errors.general}</Text>
+              <Text style={[styles.generalError, { color: colors.danger }]}>{errors.general}</Text>
             )}
 
             <View style={styles.buttonContainer}>
@@ -159,7 +166,7 @@ export default function RegisterScreen() {
                 loading={loading}
               />
             </View>
-          </Animated.View>
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </View>
@@ -169,65 +176,54 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+  },
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: Spacing.md,
+    paddingTop: 50,
+    paddingBottom: Spacing.sm,
+    borderBottomWidth: 1,
+  },
+  backBtn: {
+    padding: 4,
+  },
+  headerBarTitle: {
+    fontSize: FontSize.md,
+    fontWeight: '700',
+    letterSpacing: -0.3,
   },
   flex: {
     flex: 1,
   },
-  bgGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
-  },
   scrollContent: {
     paddingHorizontal: Spacing.md,
-    paddingTop: 60,
-    paddingBottom: 40,
+    paddingTop: Spacing.lg,
+    paddingBottom: Spacing.xl,
   },
-  backButton: {
-    marginBottom: Spacing.md,
-    paddingVertical: Spacing.xs,
-  },
-  backText: {
+  descText: {
     fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    fontWeight: '600',
-  },
-  header: {
-    alignItems: 'flex-start',
-    marginBottom: Spacing.xl,
+    lineHeight: 18,
+    marginBottom: Spacing.lg,
     paddingHorizontal: Spacing.xs,
   },
-  headerIndicator: {
-    width: 20,
-    height: 3,
-    backgroundColor: Colors.primary,
-    borderRadius: 1.5,
-    marginBottom: Spacing.sm,
-  },
-  headerTitle: {
-    fontSize: FontSize.xl,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    letterSpacing: 2,
-  },
-  headerSubtitle: {
-    fontSize: FontSize.xs + 1,
-    color: Colors.textSecondary,
-    marginTop: Spacing.xs,
-    lineHeight: 16,
-  },
   form: {
-    gap: Spacing.sm,
+    gap: Spacing.xs,
+  },
+  rowGrid: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+  },
+  gridCol: {
+    flex: 1,
   },
   generalError: {
-    color: Colors.danger,
     fontSize: FontSize.xs,
     textAlign: 'center',
+    marginTop: Spacing.xs,
   },
   buttonContainer: {
-    marginTop: Spacing.lg,
+    marginTop: Spacing.xl,
   },
 });

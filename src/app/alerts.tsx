@@ -9,15 +9,17 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Colors, Spacing, FontSize, BorderRadius } from '../constants/theme';
+import { Spacing, FontSize, BorderRadius } from '../constants/theme';
 import { getAlerts, markAlertRead, markAllAlertsRead, getCurrentUser } from '../utils/storage';
 import { AlertMessage } from '../types/car';
 import AlertItem from '../components/AlertItem';
 import GlassCard from '../components/GlassCard';
+import { useAppTheme } from '../hooks/useAppTheme';
+import { ArrowLeft } from 'lucide-react-native';
 
 export default function AlertsScreen() {
   const router = useRouter();
+  const { colors } = useAppTheme();
   const [authChecked, setAuthChecked] = useState(false);
   const [alerts, setAlerts] = useState<AlertMessage[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,29 +70,34 @@ export default function AlertsScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={['rgba(99, 102, 241, 0.05)', 'transparent']}
-        style={styles.bgGradient}
-      />
-      <View style={styles.headerRow}>
-        <TouchableOpacity onPress={() => router.replace('/')} style={styles.backButton}>
-          <Text style={styles.backText}>← Dashboard</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      {/* Header */}
+      <View style={[styles.headerBar, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
+        <TouchableOpacity 
+          onPress={() => router.replace('/')} 
+          style={styles.backBtn}
+          hitSlop={{ top: 12, right: 12, bottom: 12, left: 12 }}
+        >
+          <ArrowLeft size={20} color={colors.textPrimary} />
         </TouchableOpacity>
-        
+        <Text style={[styles.headerBarTitle, { color: colors.textPrimary }]}>Inbox Alerts</Text>
+        <View style={{ width: 24 }} />
+      </View>
+
+      <View style={styles.subHeader}>
+        <Text style={[styles.descText, { color: colors.textSecondary }]}>
+          Notifications from your QR codes.
+        </Text>
         {alerts.some(a => !a.read) && (
           <TouchableOpacity onPress={handleMarkAllRead}>
-            <Text style={styles.markReadText}>Mark all read</Text>
+            <Text style={[styles.markReadText, { color: colors.primary }]}>Mark all read</Text>
           </TouchableOpacity>
         )}
       </View>
 
-      <Text style={styles.title}>INBOX ALERTS</Text>
-      <Text style={styles.subtitle}>Alert notifications sent by users scanning your QR codes</Text>
-
       {loading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
+          <ActivityIndicator size="large" color={colors.primary} />
         </View>
       ) : (
         <ScrollView
@@ -99,17 +106,17 @@ export default function AlertsScreen() {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              tintColor={Colors.primary}
-              colors={[Colors.primary]}
+              tintColor={colors.primary}
+              colors={[colors.primary]}
             />
           }
           showsVerticalScrollIndicator={false}
         >
           {alerts.length === 0 ? (
             <GlassCard style={styles.emptyState}>
-              <View style={styles.emptyDivider} />
-              <Text style={styles.emptyTitle}>NO NOTIFICATIONS</Text>
-              <Text style={styles.emptyText}>
+              <View style={[styles.emptyDivider, { backgroundColor: colors.border }]} />
+              <Text style={[styles.emptyTitle, { color: colors.textPrimary }]}>NO NOTIFICATIONS</Text>
+              <Text style={[styles.emptyText, { color: colors.textMuted }]}>
                 Any alerts sent from scanned QR codes will appear here in chronological order.
               </Text>
             </GlassCard>
@@ -134,83 +141,70 @@ export default function AlertsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background,
+  },
+  headerBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: Spacing.md,
-    paddingTop: 60,
+    paddingTop: 50,
+    paddingBottom: Spacing.sm,
+    borderBottomWidth: 1,
   },
-  bgGradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    bottom: 0,
+  backBtn: {
+    padding: 4,
   },
-  headerRow: {
+  headerBarTitle: {
+    fontSize: FontSize.md,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  subHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    marginTop: Spacing.lg,
     marginBottom: Spacing.md,
+    paddingHorizontal: Spacing.md,
   },
-  backButton: {
-    paddingVertical: Spacing.xs,
-  },
-  backText: {
+  descText: {
     fontSize: FontSize.sm,
-    color: Colors.textSecondary,
-    fontWeight: '600',
   },
   markReadText: {
     fontSize: FontSize.xs,
-    color: Colors.accentLight,
     fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
   },
-  title: {
-    fontSize: FontSize.xl,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    letterSpacing: 2,
-    marginBottom: 4,
-  },
-  subtitle: {
-    fontSize: FontSize.xs + 1,
-    color: Colors.textSecondary,
-    marginBottom: Spacing.lg,
-    lineHeight: 16,
+  scrollContent: {
+    paddingHorizontal: Spacing.md,
+    paddingBottom: Spacing.xl,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  scrollContent: {
-    flexGrow: 1,
-  },
   emptyState: {
     alignItems: 'center',
     paddingVertical: Spacing.xxl,
     marginTop: Spacing.xl,
     borderWidth: 1,
-    borderColor: Colors.border,
     borderStyle: 'dashed',
   },
   emptyDivider: {
     width: 24,
     height: 1.5,
-    backgroundColor: Colors.border,
     marginBottom: Spacing.md,
   },
   emptyTitle: {
     fontSize: FontSize.sm,
     fontWeight: '700',
-    color: Colors.textPrimary,
     letterSpacing: 1,
     marginBottom: Spacing.xs,
   },
   emptyText: {
     fontSize: FontSize.xs,
-    color: Colors.textMuted,
     textAlign: 'center',
     paddingHorizontal: Spacing.lg,
     lineHeight: 16,

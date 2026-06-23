@@ -277,3 +277,14 @@ export const logout = async (): Promise<void> => {
   await safeRemoveItem(CARS_KEY);
   await safeRemoveItem(ALERTS_KEY);
 };
+
+const THEME_KEY = '@carguard_theme';
+
+export const getAppTheme = async (): Promise<'dark' | 'light'> => {
+  const t = await safeGetItem(THEME_KEY);
+  return t === 'light' ? 'light' : 'dark';
+};
+
+export const setAppTheme = async (theme: 'dark' | 'light'): Promise<void> => {
+  await safeSetItem(THEME_KEY, theme);
+};

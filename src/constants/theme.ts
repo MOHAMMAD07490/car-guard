@@ -1,14 +1,14 @@
 export const Colors = {
   // Primary palette - deep blue/indigo
-  primary: '#6366F1',
-  primaryDark: '#4F46E5',
-  primaryLight: '#818CF8',
-  primaryGlow: 'rgba(99, 102, 241, 0.3)',
+  primary: '#2563eb',
+  primaryDark: '#1d4ed8',
+  primaryLight: '#3b82f6',
+  primaryGlow: 'rgba(37, 99, 235, 0.15)',
   
   // Accent - cyan/teal
-  accent: '#06B6D4',
-  accentDark: '#0891B2',
-  accentLight: '#22D3EE',
+  accent: '#3b82f6',
+  accentDark: '#1d4ed8',
+  accentLight: '#60a5fa',
   
   // Success/Warning/Danger
   success: '#10B981',
@@ -19,32 +19,87 @@ export const Colors = {
   dangerLight: 'rgba(239, 68, 68, 0.15)',
   
   // Background layers (dark theme)
-  background: '#0F0F1A',
-  surface: '#1A1A2E',
-  surfaceLight: '#252540',
-  surfaceLighter: '#2D2D4A',
+  background: '#09090b',
+  surface: '#18181b',
+  surfaceLight: '#27272a',
+  surfaceLighter: '#3f3f46',
   
   // Text
-  textPrimary: '#F1F5F9',
-  textSecondary: '#94A3B8',
-  textMuted: '#64748B',
-  textInverse: '#0F172A',
+  textPrimary: '#fafafa',
+  textSecondary: '#a1a1aa',
+  textMuted: '#71717a',
+  textInverse: '#18181b',
   
   // Borders
-  border: 'rgba(148, 163, 184, 0.12)',
-  borderLight: 'rgba(148, 163, 184, 0.06)',
+  border: 'rgba(255, 255, 255, 0.08)',
+  borderLight: 'rgba(255, 255, 255, 0.04)',
   
   // Gradients
-  gradientStart: '#6366F1',
-  gradientEnd: '#06B6D4',
+  gradientStart: '#2563eb',
+  gradientEnd: '#3b82f6',
   
   // Card glass effect
-  glass: 'rgba(26, 26, 46, 0.7)',
-  glassBorder: 'rgba(99, 102, 241, 0.15)',
+  glass: 'rgba(24, 24, 27, 0.8)',
+  glassBorder: 'rgba(37, 99, 235, 0.15)',
   
   // QR specific
   qrBackground: '#FFFFFF',
-  qrForeground: '#1A1A2E',
+  qrForeground: '#09090b',
+};
+
+export const ThemeColors = {
+  dark: {
+    background: '#09090b',
+    surface: '#18181b',
+    surfaceLight: '#27272a',
+    surfaceLighter: '#3f3f46',
+    textPrimary: '#fafafa',
+    textSecondary: '#a1a1aa',
+    textMuted: '#71717a',
+    textInverse: '#18181b',
+    border: 'rgba(255, 255, 255, 0.08)',
+    borderLight: 'rgba(255, 255, 255, 0.04)',
+    primary: '#2563eb',
+    primaryDark: '#1d4ed8',
+    primaryLight: '#3b82f6',
+    primaryGlow: 'rgba(37, 99, 235, 0.15)',
+    accent: '#3b82f6',
+    accentLight: '#60a5fa',
+    success: '#10b981',
+    successLight: 'rgba(16, 185, 129, 0.1)',
+    warning: '#f59e0b',
+    warningLight: 'rgba(245, 158, 11, 0.1)',
+    danger: '#ef4444',
+    dangerLight: 'rgba(239, 68, 68, 0.1)',
+    qrBackground: '#ffffff',
+    qrForeground: '#09090b',
+  },
+  light: {
+    background: '#fafafa',
+    surface: '#ffffff',
+    surfaceLight: '#f4f4f5',
+    surfaceLighter: '#e4e4e7',
+    textPrimary: '#18181b',
+    textSecondary: '#71717a',
+    textMuted: '#a1a1aa',
+    textInverse: '#ffffff',
+    border: 'rgba(24, 24, 27, 0.08)',
+    borderLight: 'rgba(24, 24, 27, 0.04)',
+    primary: '#2563eb',
+    primaryDark: '#1d4ed8',
+    primaryLight: '#3b82f6',
+    primaryGlow: 'rgba(37, 99, 235, 0.1)',
+    accent: '#2563eb',
+    accentLight: '#3b82f6',
+    success: '#059669',
+    successLight: 'rgba(5, 150, 105, 0.08)',
+    warning: '#d97706',
+    warningLight: 'rgba(217, 119, 6, 0.08)',
+    danger: '#dc2626',
+    dangerLight: 'rgba(220, 38, 38, 0.08)',
+    qrBackground: '#ffffff',
+    qrForeground: '#18181b',
+  }
 };
 
 export const Spacing = {
