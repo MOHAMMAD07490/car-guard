@@ -76,7 +76,7 @@ export default function QRViewScreen() {
 
   const qrUrl = encodeCarToQR(car);
   const dataToken = qrUrl.split('/scan/')[1] || '';
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=00c9ff&ecc=H&format=svg&data=${encodeURIComponent(
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&color=000000&bgcolor=FFFFFF&ecc=H&format=svg&data=${encodeURIComponent(
     qrUrl
   )}`;
 
@@ -139,7 +139,7 @@ export default function QRViewScreen() {
         ctx.fillText('QRNOTE SECURE', 370, 492);
 
         // 4. Load QR Code Image as PNG with native transparency from QuickChart
-        const pngQrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrUrl)}&light=00000000&dark=00c9ff&ecLevel=H&size=460`;
+        const pngQrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrUrl)}&light=ffffff&dark=000000&ecLevel=H&size=460`;
         const qrImg = new window.Image();
         qrImg.crossOrigin = 'anonymous';
         await new Promise((resolve, reject) => {
@@ -201,7 +201,7 @@ export default function QRViewScreen() {
         const fileUri = `${FileSystem.documentDirectory}${filename}`;
         
         // High resolution QR code download
-        const downloadUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&color=00c9ff&ecc=H&data=${encodeURIComponent(qrUrl)}`;
+        const downloadUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&color=000000&bgcolor=FFFFFF&ecc=H&data=${encodeURIComponent(qrUrl)}`;
         const { uri } = await FileSystem.downloadAsync(downloadUrl, fileUri);
 
         const asset = await MediaLibrary.createAssetAsync(uri);
