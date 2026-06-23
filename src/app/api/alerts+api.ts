@@ -86,6 +86,47 @@ export async function POST(request: Request) {
       token,
     });
 
+    // Send push notification to owner
+    try {
+      const { blobs: carBlobs } = await list({ prefix: `cars/${alert.carId}.json`, token });
+      if (carBlobs.length > 0) {
+        const car = await fetchPrivateBlobJson(carBlobs[0].url);
+        const ownerId = car.ownerId;
+
+        if (ownerId) {
+          const { blobs: userBlobs } = await list({ prefix: 'users/', token });
+          for (const uBlob of userBlobs) {
+            try {
+              const user = await fetchPrivateBlobJson(uBlob.url);
+              if (user.id === ownerId && user.pushToken) {
+                // Sound name matches Android raw resource mixkit_vintage_warning_alarm_990
+                await fetch('https://exp.host/--/api/v2/push/send', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'accept-encoding': 'gzip, deflate',
+                  },
+                  body: JSON.stringify({
+                    to: user.pushToken,
+                    title: 'QRNote Security Alert',
+                    body: `${alert.message}${alert.senderNote ? `: ${alert.senderNote}` : ''}`,
+                    sound: 'custom', // Specify custom sound play
+                    channelId: 'default',
+                    data: { carId: alert.carId, alertId: alert.id },
+                  }),
+                });
+                break;
+              }
+            } catch (err) {
+              console.warn('Failed to parse user push token:', err);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to dispatch push notification:', e);
+    }
+
     return Response.json({ success: true, url });
   } catch (error: any) {
     return Response.json({ error: error.message }, { status: 500 });

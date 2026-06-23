@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "770110226305",
+    "firebase_url": "https://noxyai-default-rtdb.firebaseio.com",
+    "project_id": "noxyai",
+    "storage_bucket": "noxyai.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:770110226305:android:5164677c0a2e47cc20f280",
+        "android_client_info": {
+          "package_name": "com.qrnote.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "770110226305-14e6sh50mtsmel7l388c77ur8g8vq2dd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBOb1fwTAfGEZmePCej53X9pnuQBMC0Qvg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "770110226305-14e6sh50mtsmel7l388c77ur8g8vq2dd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

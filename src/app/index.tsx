@@ -24,6 +24,8 @@ import { useAppTheme } from '../hooks/useAppTheme';
 import { Image } from 'expo-image';
 import CustomAlert from '../components/CustomAlert';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import * as Device from 'expo-device';
 import LogoImage from '../../assets/images/icon.png';
 import WelcomeHeroImage from '../../assets/images/welcome_hero.png';
 import Example1Image from '../../assets/images/carguard_example1.png';
@@ -94,6 +96,47 @@ export default function HomeScreen() {
     }
   };
 
+  const registerForPushNotificationsAsync = async () => {
+    if (Platform.OS === 'web') return null;
+    if (!Device.isDevice) return null;
+    try {
+      if (Platform.OS === 'android') {
+        await Notifications.setNotificationChannelAsync('default', {
+          name: 'default',
+          importance: Notifications.AndroidImportance.MAX,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: '#00c9ff',
+          sound: 'mixkit_vintage_warning_alarm_990.wav',
+        });
+      }
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      let finalStatus = existingStatus;
+      if (existingStatus !== 'granted') {
+        const { status } = await Notifications.requestPermissionsAsync();
+        finalStatus = status;
+      }
+      if (finalStatus !== 'granted') return null;
+      const projectId = Constants.expoConfig?.extra?.eas?.projectId ?? Constants.easConfig?.projectId;
+      const token = (await Notifications.getExpoPushTokenAsync({ projectId })).data;
+      return token;
+    } catch (e) {
+      console.warn('Failed to obtain push token:', e);
+      return null;
+    }
+  };
+
+  const savePushTokenToServer = async (userId: string, pushToken: string) => {
+    try {
+      await fetch(getApiUrl('/api/auth/register-push-token'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, pushToken }),
+      });
+    } catch (e) {
+      console.warn('Failed to upload push token:', e);
+    }
+  };
+
   const loadData = useCallback(async () => {
     const currentUser = await getCurrentUser();
     setUser(currentUser);
@@ -110,6 +153,14 @@ export default function HomeScreen() {
       // Trigger background cloud sync to restore cars if the app was reinstalled
       const syncedCars = await syncCarsFromCloud(currentUser.id);
       setCars(syncedCars);
+
+      // Trigger push token sync
+      if (Platform.OS !== 'web') {
+        const token = await registerForPushNotificationsAsync();
+        if (token) {
+          await savePushTokenToServer(currentUser.id, token);
+        }
+      }
     } else {
       setCars([]);
       setUnreadCount(0);

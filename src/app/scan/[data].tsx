@@ -16,7 +16,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Spacing, FontSize, BorderRadius, Shadow } from '../../constants/theme';
 import { decodeQRData, decodePhone, decodeCarNumber, QRData } from '../../utils/qr';
-import { saveAlert } from '../../utils/storage';
+import { saveAlert, getApiUrl } from '../../utils/storage';
 import GlassCard from '../../components/GlassCard';
 import GradientButton from '../../components/GradientButton';
 import InputField from '../../components/InputField';
@@ -109,6 +109,25 @@ export default function ScanScreen() {
     if (!selectedType) return;
     setLoading(true);
     try {
+      // Fetch status of unread alerts for this car
+      const statusRes = await fetch(getApiUrl(`/api/alerts/status?carId=${qrData.id}`));
+      if (statusRes.ok) {
+        const statusData = await statusRes.json();
+        // If there are unread alerts, restrict observers to sending an alert every 1 minute
+        if (statusData.hasUnread && statusData.lastTimestamp > 0) {
+          const elapsed = Date.now() - statusData.lastTimestamp;
+          if (elapsed < 60000) {
+            const waitTime = Math.ceil((60000 - elapsed) / 1000);
+            showCustomAlert(
+              'Alert Rate Limited',
+              `An alert was already routed to the owner. Please wait ${waitTime} seconds before sending another, or wait for them to open the app.`
+            );
+            setLoading(false);
+            return;
+          }
+        }
+      }
+
       const typeLabel = ALERT_TYPES.find((t) => t.type === selectedType)?.label || 'Alert';
       const sanitizedNote = sanitizeInput(note.trim());
       const newAlert = {
