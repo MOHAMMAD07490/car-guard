@@ -12,13 +12,14 @@ import {
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Spacing, FontSize, BorderRadius } from '../constants/theme';
-import { saveCar } from '../utils/storage';
+import { saveCar, getCurrentUser } from '../utils/storage';
 import { generateId } from '../utils/qr';
 import InputField from '../components/InputField';
 import GradientButton from '../components/GradientButton';
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
   const [ownerName, setOwnerName] = useState('');
   const [carNumber, setCarNumber] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -29,11 +30,18 @@ export default function RegisterScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+    getCurrentUser().then((user) => {
+      if (!user) {
+        router.replace('/login');
+      } else {
+        setAuthChecked(true);
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }).start();
+      }
+    });
   }, []);
 
   const validate = (): boolean => {
@@ -67,6 +75,10 @@ export default function RegisterScreen() {
       setLoading(false);
     }
   };
+
+  if (!authChecked) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>

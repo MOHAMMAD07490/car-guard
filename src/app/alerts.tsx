@@ -11,13 +11,14 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Spacing, FontSize, BorderRadius } from '../constants/theme';
-import { getAlerts, markAlertRead, markAllAlertsRead } from '../utils/storage';
+import { getAlerts, markAlertRead, markAllAlertsRead, getCurrentUser } from '../utils/storage';
 import { AlertMessage } from '../types/car';
 import AlertItem from '../components/AlertItem';
 import GlassCard from '../components/GlassCard';
 
 export default function AlertsScreen() {
   const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
   const [alerts, setAlerts] = useState<AlertMessage[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -35,7 +36,14 @@ export default function AlertsScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadAlerts();
+      getCurrentUser().then((user) => {
+        if (!user) {
+          router.replace('/login');
+        } else {
+          setAuthChecked(true);
+          loadAlerts();
+        }
+      });
     }, [loadAlerts])
   );
 
@@ -54,6 +62,10 @@ export default function AlertsScreen() {
     await markAllAlertsRead();
     await loadAlerts();
   };
+
+  if (!authChecked) {
+    return null;
+  }
 
   return (
     <View style={styles.container}>

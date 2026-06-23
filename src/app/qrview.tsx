@@ -14,7 +14,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Clipboard from 'expo-clipboard';
 import { Colors, Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
-import { getCarById } from '../utils/storage';
+import { getCarById, getCurrentUser } from '../utils/storage';
 import { CarProfile } from '../types/car';
 import { encodeCarToQR, getBaseWebUrl } from '../utils/qr';
 import GlassCard from '../components/GlassCard';
@@ -23,14 +23,26 @@ import GradientButton from '../components/GradientButton';
 export default function QRViewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const [authChecked, setAuthChecked] = useState(false);
   const [car, setCar] = useState<CarProfile | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (id) {
-      getCarById(id).then(setCar);
-    }
+    getCurrentUser().then((user) => {
+      if (!user) {
+        router.replace('/login');
+      } else {
+        setAuthChecked(true);
+        if (id) {
+          getCarById(id).then(setCar);
+        }
+      }
+    });
   }, [id]);
+
+  if (!authChecked) {
+    return null;
+  }
 
   if (!car) {
     return (

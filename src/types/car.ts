@@ -1,5 +1,6 @@
 export interface CarProfile {
   id: string;
+  ownerId?: string;
   ownerName: string;
   carNumber: string;
   phoneNumber: string;

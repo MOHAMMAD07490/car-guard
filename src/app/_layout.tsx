@@ -15,6 +15,7 @@ export default function RootLayout() {
         }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="login" />
         <Stack.Screen name="register" />
         <Stack.Screen name="qrview" />
         <Stack.Screen name="alerts" />

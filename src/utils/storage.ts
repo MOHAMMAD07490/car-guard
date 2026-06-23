@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 import { CarProfile, AlertMessage } from '../types/car';
+import { UserProfile } from '../types/user';
 import { getBaseWebUrl } from './qr';
 
 const CARS_KEY = '@carguard_cars';
@@ -10,7 +11,7 @@ const ALERTS_KEY = '@carguard_alerts';
 const memoryStorage: Record<string, string> = {};
 
 // Helper to construct absolute endpoint URLs for native / relative for web
-const getApiUrl = (endpoint: string): string => {
+export const getApiUrl = (endpoint: string): string => {
   if (Platform.OS === 'web') {
     return endpoint;
   }
@@ -85,6 +86,13 @@ export const saveCar = async (car: CarProfile): Promise<void> => {
   // 1. Save locally (always mirrors to memory storage fallback)
   const cars = await getCars();
   const existing = cars.findIndex(c => c.id === car.id);
+  
+  // Associate the car with the currently logged-in user
+  const currentUser = await getCurrentUser();
+  if (currentUser) {
+    car.ownerId = currentUser.id;
+  }
+
   if (existing >= 0) {
     cars[existing] = car;
   } else {
@@ -246,6 +254,26 @@ export const getUnreadCount = async (): Promise<number> => {
 };
 
 export const clearAllData = async (): Promise<void> => {
+  await safeRemoveItem(CARS_KEY);
+  await safeRemoveItem(ALERTS_KEY);
+};
+
+const USER_KEY = '@carguard_user';
+const TOKEN_KEY = '@carguard_token';
+
+export const getCurrentUser = async (): Promise<UserProfile | null> => {
+  const data = await safeGetItem(USER_KEY);
+  return data ? JSON.parse(data) : null;
+};
+
+export const setCurrentUser = async (user: UserProfile, token: string): Promise<void> => {
+  await safeSetItem(USER_KEY, JSON.stringify(user));
+  await safeSetItem(TOKEN_KEY, token);
+};
+
+export const logout = async (): Promise<void> => {
+  await safeRemoveItem(USER_KEY);
+  await safeRemoveItem(TOKEN_KEY);
   await safeRemoveItem(CARS_KEY);
   await safeRemoveItem(ALERTS_KEY);
 };
