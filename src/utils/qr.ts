@@ -77,21 +77,7 @@ export const getBaseWebUrl = (): string => {
   if (Platform.OS === 'web' && typeof window !== 'undefined') {
     return window.location.origin;
   }
-  
-  // If running in an Android Emulator, loopback to the host machine's localhost (10.0.2.2)
-  if (Platform.OS === 'android' && !Device.isDevice) {
-    return 'http://10.0.2.2:8081';
-  }
-  
-  // For development with Expo Go, we can use the computer's IP address
-  const debuggerHost = Constants.expoConfig?.hostUri;
-  if (debuggerHost) {
-    const ip = debuggerHost.split(':')[0];
-    return `http://${ip}:8081`;
-  }
-  
-  // Fallback production URL
-  return 'https://carguard-privacy.web.app';
+  return 'https://car-guard-kappa.vercel.app';
 };
 
 export const encodeCarToQR = (car: CarProfile): string => {

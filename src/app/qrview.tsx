@@ -8,6 +8,7 @@ import {
   Share,
   Alert,
   Platform,
+  ImageBackground,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
@@ -22,6 +23,10 @@ import GradientButton from '../components/GradientButton';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { ArrowLeft, Shield, Copy, Share2, Search } from 'lucide-react-native';
 
+import QRBg1 from '../assets/images/qr_bg_1.jpg';
+import QRBg2 from '../assets/images/qr_bg_2.jpg';
+import LogoImage from '../assets/images/icon.png';
+
 export default function QRViewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
@@ -29,6 +34,7 @@ export default function QRViewScreen() {
   const [authChecked, setAuthChecked] = useState(false);
   const [car, setCar] = useState<CarProfile | null>(null);
   const [copied, setCopied] = useState(false);
+  const [activeBg, setActiveBg] = useState<'bg1' | 'bg2'>('bg1');
 
   useEffect(() => {
     getCurrentUser().then((user) => {
@@ -57,7 +63,7 @@ export default function QRViewScreen() {
 
   const qrUrl = encodeCarToQR(car);
   const dataToken = qrUrl.split('/scan/')[1] || '';
-  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&bgcolor=FFFFFF&color=1A1A2E&margin=20&data=${encodeURIComponent(
+  const qrImageUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&bgcolor=FFFFFF&color=1A1A2E&margin=20&ecc=H&data=${encodeURIComponent(
     qrUrl
   )}`;
 
@@ -104,20 +110,52 @@ export default function QRViewScreen() {
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* QR Code Card */}
-        <View style={styles.qrCard}>
-          <View style={styles.qrShieldBadge}>
-            <Shield size={16} color="#71717A" />
-          </View>
-          <Image
-            source={qrImageUrl}
-            style={styles.qrImage}
-            contentFit="contain"
-            transition={400}
-          />
-          <Text style={styles.qrPlate}>{car.carNumber}</Text>
-          <Text style={styles.qrName}>{car.ownerName}</Text>
+        {/* QR Background Selector */}
+        <View style={styles.bgSelectorRow}>
+          <TouchableOpacity 
+            style={[styles.bgSelectorBtn, activeBg === 'bg1' ? styles.bgSelectorBtnActive : { backgroundColor: colors.surface, borderColor: colors.border }]} 
+            onPress={() => setActiveBg('bg1')}
+          >
+            <Text style={[styles.bgSelectorText, { color: colors.textPrimary, fontWeight: activeBg === 'bg1' ? '700' : '500' }]}>Carbon Cyber</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={[styles.bgSelectorBtn, activeBg === 'bg2' ? styles.bgSelectorBtnActive : { backgroundColor: colors.surface, borderColor: colors.border }]} 
+            onPress={() => setActiveBg('bg2')}
+          >
+            <Text style={[styles.bgSelectorText, { color: colors.textPrimary, fontWeight: activeBg === 'bg2' ? '700' : '500' }]}>Abstract Tech</Text>
+          </TouchableOpacity>
         </View>
+
+        {/* QR Code Card */}
+        <ImageBackground 
+          source={activeBg === 'bg1' ? QRBg1 : QRBg2} 
+          style={styles.qrCardBackground}
+          imageStyle={{ borderRadius: BorderRadius.xl }}
+        >
+          {/* A glassmorphic overlay container inside the card */}
+          <View style={styles.qrCardGlass}>
+            <View style={styles.qrHeaderRow}>
+              <Image source={LogoImage} style={styles.qrCardLogo} />
+              <Text style={styles.qrCardBranding}>CARGUARD SECURE</Text>
+            </View>
+            
+            {/* The QR Code itself, with high ECC so we can overlay the logo */}
+            <View style={styles.qrWrapper}>
+              <Image
+                source={qrImageUrl}
+                style={styles.qrImage}
+                contentFit="contain"
+              />
+              {/* Logo in the center of the QR code */}
+              <View style={styles.qrCenterLogo}>
+                <Image source={LogoImage} style={styles.qrCenterLogoImage} />
+              </View>
+            </View>
+            
+            <Text style={styles.qrPlateText}>{car.carNumber}</Text>
+            <Text style={styles.qrNameText}>{car.ownerName}</Text>
+          </View>
+        </ImageBackground>
 
         {/* Security Status Box */}
         <View style={[
@@ -221,45 +259,116 @@ const styles = StyleSheet.create({
     paddingTop: Spacing.lg,
     paddingBottom: Spacing.xl,
   },
-  qrCard: {
-    backgroundColor: '#FFFFFF',
+  bgSelectorRow: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    marginBottom: Spacing.md,
+  },
+  bgSelectorBtn: {
+    flex: 1,
+    borderRadius: BorderRadius.md,
+    paddingVertical: Spacing.sm + 2,
+    alignItems: 'center',
+    borderWidth: 1,
+  },
+  bgSelectorBtnActive: {
+    backgroundColor: '#00c9ff',
+    borderColor: '#00c9ff',
+  },
+  bgSelectorText: {
+    fontSize: FontSize.xs + 1,
+  },
+  qrCardBackground: {
     borderRadius: BorderRadius.xl,
+    overflow: 'hidden',
+    marginBottom: Spacing.md,
+    ...Shadow.card,
+  },
+  qrCardGlass: {
+    backgroundColor: 'rgba(0, 0, 0, 0.45)',
     padding: Spacing.xl,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(24, 24, 27, 0.08)',
-    marginBottom: Spacing.md,
-    position: 'relative',
-    ...Shadow.card,
   },
-  qrShieldBadge: {
-    position: 'absolute',
-    top: Spacing.md,
-    right: Spacing.md,
-    padding: 6,
-    backgroundColor: '#F4F4F5',
-    borderRadius: BorderRadius.round,
-  },
-  qrImage: {
-    width: 200,
-    height: 200,
+  qrHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     marginBottom: Spacing.lg,
   },
-  qrPlate: {
-    fontFamily: 'monospace',
-    fontSize: FontSize.xl - 2,
+  qrCardLogo: {
+    width: 24,
+    height: 24,
+    borderRadius: 4,
+  },
+  qrCardBranding: {
+    fontSize: FontSize.xs - 1,
     fontWeight: '800',
     letterSpacing: 2,
-    color: '#18181B',
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
-  qrName: {
+  qrWrapper: {
+    position: 'relative',
+    width: 200,
+    height: 200,
+    backgroundColor: '#FFFFFF',
+    borderRadius: BorderRadius.lg,
+    padding: Spacing.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: Spacing.lg,
+    ...Shadow.card,
+  },
+  qrImage: {
+    width: 170,
+    height: 170,
+  },
+  qrCenterLogo: {
+    position: 'absolute',
+    top: '50%',
+    left: '50%',
+    marginTop: -20,
+    marginLeft: -20,
+    width: 40,
+    height: 40,
+    borderRadius: 8,
+    backgroundColor: '#FFFFFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  qrCenterLogoImage: {
+    width: 32,
+    height: 32,
+    borderRadius: 4,
+  },
+  qrPlateText: {
+    fontFamily: 'monospace',
+    fontSize: FontSize.xl,
+    fontWeight: '900',
+    letterSpacing: 2.5,
+    color: '#FFFFFF',
+    textShadowColor: 'rgba(0, 0, 0, 0.6)',
+    textShadowOffset: { width: 0, height: 2 },
+    textShadowRadius: 4,
+  },
+  qrNameText: {
     fontSize: FontSize.xs,
-    fontWeight: '700',
-    color: '#71717A',
+    fontWeight: '800',
+    color: 'rgba(255, 255, 255, 0.8)',
     letterSpacing: 1.5,
-    marginTop: 2,
+    marginTop: 4,
     textTransform: 'uppercase',
+    textShadowColor: 'rgba(0, 0, 0, 0.4)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
   securityBox: {
     flexDirection: 'row',

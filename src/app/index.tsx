@@ -21,6 +21,8 @@ import CarCard from '../components/CarCard';
 import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
 import { useAppTheme } from '../hooks/useAppTheme';
+import { Image } from 'expo-image';
+import LogoImage from '../../assets/images/icon.png';
 import {
   Shield,
   Moon,
@@ -135,7 +137,7 @@ export default function HomeScreen() {
         {/* Header */}
         <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
           <View style={styles.headerLeft}>
-            <Shield size={22} color={colors.primary} />
+            <Image source={LogoImage} style={{ width: 22, height: 22, marginRight: 8, borderRadius: 4 }} />
             <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>CarGuard</Text>
           </View>
           <TouchableOpacity onPress={toggleTheme} style={[styles.themeBtn, { backgroundColor: colors.surfaceLight }]}>
@@ -192,7 +194,7 @@ export default function HomeScreen() {
             <View style={[styles.heroRight, isDesktop ? { flex: 0.8, alignItems: 'center' } : { marginTop: Spacing.xl }]}>
               <GlassCard style={styles.mockupCard}>
                 <View style={styles.mockupTagHeader}>
-                  <Shield size={16} color={colors.primary} style={{ marginRight: 6 }} />
+                  <Image source={LogoImage} style={{ width: 16, height: 16, marginRight: 6, borderRadius: 3 }} />
                   <Text style={[styles.mockupTagTitle, { color: colors.textPrimary }]}>CARGUARD SECURE PORTAL</Text>
                 </View>
                 <View style={[styles.mockupQR, { borderColor: colors.border }]}>
@@ -407,7 +409,7 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={[styles.header, { backgroundColor: colors.surface, borderBottomColor: colors.border }]}>
         <View style={styles.headerLeft}>
-          <Shield size={22} color={colors.primary} />
+          <Image source={LogoImage} style={{ width: 22, height: 22, marginRight: 8, borderRadius: 4 }} />
           <Text style={[styles.headerTitle, { color: colors.textPrimary }]}>CarGuard</Text>
         </View>
         <View style={styles.headerRight}>
