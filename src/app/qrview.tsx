@@ -18,6 +18,8 @@ import { CarProfile } from '../types/car';
 import { encodeCarToQR, getBaseWebUrl } from '../utils/qr';
 import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
+import * as FileSystem from 'expo-file-system';
+import * as MediaLibrary from 'expo-media-library';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { ArrowLeft, Shield } from 'lucide-react-native';
 import LoadingIndicator from '../components/LoadingIndicator';
@@ -35,6 +37,17 @@ export default function QRViewScreen() {
   const [activeBg, setActiveBg] = useState<'bg1' | 'bg2'>('bg1');
   const [generating, setGenerating] = useState(false);
   const [qrLoading, setQrLoading] = useState(true);
+
+  // Custom alert states
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const showCustomAlert = (title: string, message: string) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
 
   useEffect(() => {
     getCurrentUser().then((user) => {
@@ -67,126 +80,142 @@ export default function QRViewScreen() {
     qrUrl
   )}`;
 
-  // Custom alert states
-  const [alertVisible, setAlertVisible] = useState(false);
-  const [alertTitle, setAlertTitle] = useState('');
-  const [alertMessage, setAlertMessage] = useState('');
-
-  const showCustomAlert = (title: string, message: string) => {
-    setAlertTitle(title);
-    setAlertMessage(message);
-    setAlertVisible(true);
-  };
-
   const handleDownloadPoster = async () => {
-    if (Platform.OS !== 'web') {
-      showCustomAlert('Download', 'Downloading is supported on the web version.');
-      return;
-    }
-    
-    try {
-      setGenerating(true);
-      const canvas = document.createElement('canvas');
-      canvas.width = 1080;
-      canvas.height = 1920;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+    if (Platform.OS === 'web') {
+      try {
+        setGenerating(true);
+        const canvas = document.createElement('canvas');
+        canvas.width = 1080;
+        canvas.height = 1920;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
 
-      // 1. Load Background Image
-      const bgImg = new window.Image();
-      bgImg.crossOrigin = 'anonymous';
-      await new Promise((resolve, reject) => {
-        bgImg.onload = resolve;
-        bgImg.onerror = reject;
-        bgImg.src = activeBg === 'bg1' ? QRBg1 : QRBg2;
-      });
-      ctx.drawImage(bgImg, 0, 0, 1080, 1920);
+        // 1. Load Background Image
+        const bgImg = new window.Image();
+        bgImg.crossOrigin = 'anonymous';
+        await new Promise((resolve, reject) => {
+          bgImg.onload = resolve;
+          bgImg.onerror = reject;
+          bgImg.src = activeBg === 'bg1' ? QRBg1 : QRBg2;
+        });
+        ctx.drawImage(bgImg, 0, 0, 1080, 1920);
 
-      // 2. Draw Semi-transparent Glass Overlay
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
-      ctx.beginPath();
-      const x = 140, y = 360, w = 800, h = 1200, r = 40;
-      ctx.moveTo(x + r, y);
-      ctx.lineTo(x + w - r, y);
-      ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-      ctx.lineTo(x + w, y + h - r);
-      ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-      ctx.lineTo(x + r, y + h);
-      ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-      ctx.lineTo(x, y + r);
-      ctx.quadraticCurveTo(x, y, x + r, y);
-      ctx.closePath();
-      ctx.fill();
-
-      // 3. Draw Header Logo & Branding Text
-      const logoImg = new window.Image();
-      logoImg.crossOrigin = 'anonymous';
-      await new Promise((resolve) => {
-        logoImg.onload = resolve;
-        logoImg.onerror = resolve;
-        logoImg.src = LogoImage;
-      });
-      if (logoImg.complete && logoImg.width > 0) {
-        ctx.save();
+        // 2. Draw Semi-transparent Glass Overlay
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
         ctx.beginPath();
-        ctx.arc(320, 480, 30, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(logoImg, 290, 450, 60, 60);
-        ctx.restore();
-      }
-
-      ctx.fillStyle = '#FFFFFF';
-      ctx.font = 'bold 36px monospace';
-      ctx.textAlign = 'left';
-      ctx.fillText('QRNOTE SECURE', 370, 492);
-
-      // 4. Load QR Code Image as PNG with native transparency from QuickChart
-      const pngQrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrUrl)}&light=00000000&dark=00c9ff&ecLevel=H&size=460`;
-      const qrImg = new window.Image();
-      qrImg.crossOrigin = 'anonymous';
-      await new Promise((resolve, reject) => {
-        qrImg.onload = resolve;
-        qrImg.onerror = reject;
-        qrImg.src = pngQrUrl;
-      });
-      ctx.drawImage(qrImg, 310, 620, 460, 460);
-
-      // 6. Draw Center Logo on the QR code
-      if (logoImg.complete && logoImg.width > 0) {
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.arc(540, 850, 50, 0, Math.PI * 2);
+        const x = 140, y = 360, w = 800, h = 1200, r = 40;
+        ctx.moveTo(x + r, y);
+        ctx.lineTo(x + w - r, y);
+        ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+        ctx.lineTo(x + w, y + h - r);
+        ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        ctx.lineTo(x + r, y + h);
+        ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+        ctx.lineTo(x, y + r);
+        ctx.quadraticCurveTo(x, y, x + r, y);
+        ctx.closePath();
         ctx.fill();
-        
-        ctx.save();
-        ctx.beginPath();
-        ctx.arc(540, 850, 40, 0, Math.PI * 2);
-        ctx.clip();
-        ctx.drawImage(logoImg, 500, 810, 80, 80);
-        ctx.restore();
+
+        // 3. Draw Header Logo & Branding Text
+        const logoImg = new window.Image();
+        logoImg.crossOrigin = 'anonymous';
+        await new Promise((resolve) => {
+          logoImg.onload = resolve;
+          logoImg.onerror = resolve;
+          logoImg.src = LogoImage;
+        });
+        if (logoImg.complete && logoImg.width > 0) {
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(320, 480, 30, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(logoImg, 290, 450, 60, 60);
+          ctx.restore();
+        }
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 36px monospace';
+        ctx.textAlign = 'left';
+        ctx.fillText('QRNOTE SECURE', 370, 492);
+
+        // 4. Load QR Code Image as PNG with native transparency from QuickChart
+        const pngQrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(qrUrl)}&light=00000000&dark=00c9ff&ecLevel=H&size=460`;
+        const qrImg = new window.Image();
+        qrImg.crossOrigin = 'anonymous';
+        await new Promise((resolve, reject) => {
+          qrImg.onload = resolve;
+          qrImg.onerror = reject;
+          qrImg.src = pngQrUrl;
+        });
+        ctx.drawImage(qrImg, 310, 620, 460, 460);
+
+        // 6. Draw Center Logo on the QR code
+        if (logoImg.complete && logoImg.width > 0) {
+          ctx.fillStyle = '#FFFFFF';
+          ctx.beginPath();
+          ctx.arc(540, 850, 50, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.save();
+          ctx.beginPath();
+          ctx.arc(540, 850, 40, 0, Math.PI * 2);
+          ctx.clip();
+          ctx.drawImage(logoImg, 500, 810, 80, 80);
+          ctx.restore();
+        }
+
+        // 7. Draw Plate Number and Owner Name
+        ctx.fillStyle = '#FFFFFF';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 64px monospace';
+        ctx.fillText(car.carNumber, 540, 1250);
+
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.font = 'bold 36px sans-serif';
+        ctx.fillText(car.ownerName.toUpperCase(), 540, 1330);
+
+        // 8. Trigger Download
+        const dataUrl = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `qrnote_${car.carNumber.replace(/\s+/g, '_')}.png`;
+        link.href = dataUrl;
+        link.click();
+      } catch (err) {
+        console.error('Failed to generate PNG:', err);
+        showCustomAlert('Error', 'Failed to generate poster. Please try again.');
+      } finally {
+        setGenerating(false);
       }
+    } else {
+      // Native APK Save to Gallery
+      try {
+        setGenerating(true);
+        const { status } = await MediaLibrary.requestPermissionsAsync();
+        if (status !== 'granted') {
+          showCustomAlert('Permission Denied', 'Storage permissions are required to save the QR code to your photo library.');
+          setGenerating(false);
+          return;
+        }
 
-      // 7. Draw Plate Number and Owner Name
-      ctx.fillStyle = '#FFFFFF';
-      ctx.textAlign = 'center';
-      ctx.font = 'bold 64px monospace';
-      ctx.fillText(car.carNumber, 540, 1250);
+        const filename = `qrnote_car_${car.carNumber.replace(/\s+/g, '_')}.png`;
+        const fileUri = `${FileSystem.documentDirectory}${filename}`;
+        
+        // High resolution QR code download
+        const downloadUrl = `https://api.qrserver.com/v1/create-qr-code/?size=500x500&color=00c9ff&ecc=H&data=${encodeURIComponent(qrUrl)}`;
+        const { uri } = await FileSystem.downloadAsync(downloadUrl, fileUri);
 
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
-      ctx.font = 'bold 36px sans-serif';
-      ctx.fillText(car.ownerName.toUpperCase(), 540, 1330);
-
-      // 8. Trigger Download
-      const dataUrl = canvas.toDataURL('image/png');
-      const link = document.createElement('a');
-      link.download = `qrnote_${car.carNumber.replace(/\s+/g, '_')}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch (err) {
-      console.error('Failed to generate PNG:', err);
-      alert('Failed to generate poster. Please try again.');
-    } finally {
-      setGenerating(false);
+        const asset = await MediaLibrary.createAssetAsync(uri);
+        if (asset) {
+          showCustomAlert('Saved Successfully', 'The windshield QR note has been saved to your photo gallery.');
+        } else {
+          showCustomAlert('Error', 'Failed to save QR note asset.');
+        }
+      } catch (e) {
+        console.warn('Native download error:', e);
+        showCustomAlert('Error', 'An error occurred while saving the QR code.');
+      } finally {
+        setGenerating(false);
+      }
     }
   };
 

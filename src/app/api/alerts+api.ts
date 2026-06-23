@@ -110,7 +110,7 @@ export async function POST(request: Request) {
                     to: user.pushToken,
                     title: 'QRNote Security Alert',
                     body: `${alert.message}${alert.senderNote ? `: ${alert.senderNote}` : ''}`,
-                    sound: 'custom', // Specify custom sound play
+                    sound: 'mixkit_vintage_warning_alarm_990.wav',
                     channelId: 'default',
                     data: { carId: alert.carId, alertId: alert.id },
                   }),
