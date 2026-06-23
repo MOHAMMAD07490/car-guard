@@ -62,6 +62,12 @@
           "photosPermission": "Allow QRNote to access your photos to save QR codes.",
           "savePhotosPermission": "Allow QRNote to save QR codes to your gallery."
         }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-5128179758660592~4331041524"
+        }
       ]
     ],
     "experiments": {

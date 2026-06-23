@@ -25,6 +25,7 @@ import { Image } from 'expo-image';
 import CustomAlert from '../components/CustomAlert';
 import Constants from 'expo-constants';
 import * as Device from 'expo-device';
+import { AdBanner } from '../components/AdBanner';
 
 // Dynamically load expo-notifications to prevent crashes in Expo Go on Android
 let Notifications: any = null;
@@ -613,6 +614,7 @@ export default function HomeScreen() {
               </TouchableOpacity>
             </View>
           </View>
+          <AdBanner />
         </ScrollView>
         <CustomAlert
           visible={alertVisible}
@@ -714,6 +716,8 @@ export default function HomeScreen() {
             ))
           )}
         </View>
+
+        <AdBanner />
 
         {/* Dashboard Footer */}
         <View style={[styles.mobileFooter, { borderTopWidth: 1, borderTopColor: colors.border, marginTop: Spacing.xl, paddingVertical: Spacing.md }]}>

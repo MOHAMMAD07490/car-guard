@@ -11,6 +11,7 @@ import {
   Linking,
 } from 'react-native';
 import CustomAlert from '../../components/CustomAlert';
+import { AdBanner } from '../../components/AdBanner';
 import { sanitizeInput } from '../../utils/security';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -382,6 +383,8 @@ export default function ScanScreen() {
               </View>
             )}
           </GlassCard>
+
+          <AdBanner />
 
           <View style={{ height: 40 }} />
         </ScrollView>
