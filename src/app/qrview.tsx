@@ -5,10 +5,10 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   Platform,
   ImageBackground,
 } from 'react-native';
+import CustomAlert from '../components/CustomAlert';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -67,9 +67,20 @@ export default function QRViewScreen() {
     qrUrl
   )}`;
 
+  // Custom alert states
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+
+  const showCustomAlert = (title: string, message: string) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertVisible(true);
+  };
+
   const handleDownloadPoster = async () => {
     if (Platform.OS !== 'web') {
-      Alert.alert('Download', 'Downloading is supported on the web version.');
+      showCustomAlert('Download', 'Downloading is supported on the web version.');
       return;
     }
     
@@ -302,6 +313,12 @@ export default function QRViewScreen() {
 
         <View style={{ height: 40 }} />
       </ScrollView>
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+      />
     </View>
   );
 }

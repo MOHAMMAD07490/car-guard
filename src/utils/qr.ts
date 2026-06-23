@@ -5,53 +5,61 @@ import { CarProfile } from '../types/car';
 
 // Simple encoding for privacy - in production you'd use proper encryption
 const base64Encode = (str: string): string => {
+  let encoded = '';
   if (typeof btoa !== 'undefined') {
     try {
-      return btoa(unescape(encodeURIComponent(str)));
+      encoded = btoa(unescape(encodeURIComponent(str)));
     } catch {
       // fallback
     }
   }
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-  let result = '';
-  const encoded = encodeURIComponent(str);
-  const bytes: number[] = [];
-  for (let i = 0; i < encoded.length; i++) {
-    if (encoded[i] === '%') {
-      bytes.push(parseInt(encoded.substr(i + 1, 2), 16));
-      i += 2;
-    } else {
-      bytes.push(encoded.charCodeAt(i));
+  if (!encoded) {
+    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
+    let result = '';
+    const encodedStr = encodeURIComponent(str);
+    const bytes: number[] = [];
+    for (let i = 0; i < encodedStr.length; i++) {
+      if (encodedStr[i] === '%') {
+        bytes.push(parseInt(encodedStr.substr(i + 1, 2), 16));
+        i += 2;
+      } else {
+        bytes.push(encodedStr.charCodeAt(i));
+      }
     }
+    for (let i = 0; i < bytes.length; i += 3) {
+      const b1 = bytes[i];
+      const b2 = bytes[i + 1] ?? 0;
+      const b3 = bytes[i + 2] ?? 0;
+      result += chars[b1 >> 2];
+      result += chars[((b1 & 3) << 4) | (b2 >> 4)];
+      result += i + 1 < bytes.length ? chars[((b2 & 15) << 2) | (b3 >> 6)] : '=';
+      result += i + 2 < bytes.length ? chars[b3 & 63] : '=';
+    }
+    encoded = result;
   }
-  for (let i = 0; i < bytes.length; i += 3) {
-    const b1 = bytes[i];
-    const b2 = bytes[i + 1] ?? 0;
-    const b3 = bytes[i + 2] ?? 0;
-    result += chars[b1 >> 2];
-    result += chars[((b1 & 3) << 4) | (b2 >> 4)];
-    result += i + 1 < bytes.length ? chars[((b2 & 15) << 2) | (b3 >> 6)] : '=';
-    result += i + 2 < bytes.length ? chars[b3 & 63] : '=';
-  }
-  return result;
+  return encoded.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 };
 
 const base64Decode = (str: string): string => {
+  let cleaned = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (cleaned.length % 4 !== 0) {
+    cleaned += '=';
+  }
   if (typeof atob !== 'undefined') {
     try {
-      return decodeURIComponent(escape(atob(str)));
+      return decodeURIComponent(escape(atob(cleaned)));
     } catch {
       // fallback
     }
   }
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
   const resultBytes: number[] = [];
-  const cleaned = str.replace(/=+$/, '');
-  for (let i = 0; i < cleaned.length; i += 4) {
-    const b1 = chars.indexOf(cleaned[i]);
-    const b2 = chars.indexOf(cleaned[i + 1]);
-    const b3 = chars.indexOf(cleaned[i + 2]);
-    const b4 = chars.indexOf(cleaned[i + 3]);
+  const noPadding = cleaned.replace(/=+$/, '');
+  for (let i = 0; i < noPadding.length; i += 4) {
+    const b1 = chars.indexOf(noPadding[i]);
+    const b2 = chars.indexOf(noPadding[i + 1]);
+    const b3 = noPadding[i + 2] ? chars.indexOf(noPadding[i + 2]) : -1;
+    const b4 = noPadding[i + 3] ? chars.indexOf(noPadding[i + 3]) : -1;
     resultBytes.push((b1 << 2) | (b2 >> 4));
     if (b3 >= 0) resultBytes.push(((b2 & 15) << 4) | (b3 >> 2));
     if (b4 >= 0) resultBytes.push(((b3 & 3) << 6) | b4);

@@ -18,6 +18,8 @@ import GradientButton from '../components/GradientButton';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { ArrowLeft } from 'lucide-react-native';
 
+import { sanitizeInput } from '../utils/security';
+
 export default function RegisterScreen() {
   const router = useRouter();
   const { colors } = useAppTheme();
@@ -63,11 +65,11 @@ export default function RegisterScreen() {
       const id = generateId();
       await saveCar({
         id,
-        ownerName: ownerName.trim(),
-        carNumber: carNumber.trim().toUpperCase(),
-        phoneNumber: phoneNumber.trim(),
-        carModel: carModel.trim() || undefined,
-        carColor: carColor.trim() || undefined,
+        ownerName: sanitizeInput(ownerName.trim()),
+        carNumber: sanitizeInput(carNumber.trim().toUpperCase()),
+        phoneNumber: sanitizeInput(phoneNumber.trim()),
+        carModel: sanitizeInput(carModel.trim()) || undefined,
+        carColor: sanitizeInput(carColor.trim()) || undefined,
         createdAt: Date.now(),
       });
       router.replace(`/qrview?id=${id}`);

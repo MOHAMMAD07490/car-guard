@@ -16,6 +16,8 @@ import InputField from '../components/InputField';
 import GradientButton from '../components/GradientButton';
 import GlassCard from '../components/GlassCard';
 
+import { sanitizeInput } from '../utils/security';
+
 export default function LoginScreen() {
   const router = useRouter();
   const [isSignUp, setIsSignUp] = useState(false);
@@ -49,8 +51,13 @@ export default function LoginScreen() {
     setLoading(true);
     setErrors({});
 
+    const sanitizedEmail = sanitizeInput(email);
+    const sanitizedName = sanitizeInput(name);
+
     const endpoint = isSignUp ? '/api/auth/register' : '/api/auth/login';
-    const payload = isSignUp ? { name, email, password } : { email, password };
+    const payload = isSignUp 
+      ? { name: sanitizedName, email: sanitizedEmail, password } 
+      : { email: sanitizedEmail, password };
 
     try {
       const response = await fetch(getApiUrl(endpoint), {

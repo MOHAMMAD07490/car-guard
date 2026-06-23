@@ -6,10 +6,12 @@ import {
   ScrollView,
   TouchableOpacity,
   TextInput,
-  Alert,
   Platform,
   KeyboardAvoidingView,
+  Linking,
 } from 'react-native';
+import CustomAlert from '../../components/CustomAlert';
+import { sanitizeInput } from '../../utils/security';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Spacing, FontSize, BorderRadius, Shadow } from '../../constants/theme';
@@ -54,11 +56,28 @@ export default function ScanScreen() {
   const [revealedPhone, setRevealedPhone] = useState('');
   const [verifyError, setVerifyError] = useState('');
 
+  // Custom Alert states
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertButtons, setAlertButtons] = useState<Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>>([]);
+
+  const showCustomAlert = (title: string, message: string, buttons?: typeof alertButtons) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertButtons(buttons || []);
+    setAlertVisible(true);
+  };
+
   useEffect(() => {
     if (data) {
-      const decoded = decodeQRData(data);
-      setQrData(decoded);
-      setDataLoaded(true);
+      // Simulate loading sequence for premium verification/checks
+      const timer = setTimeout(() => {
+        const decoded = decodeQRData(data);
+        setQrData(decoded);
+        setDataLoaded(true);
+      }, 1500); // 1.5s delay to show the loading car SVG
+      return () => clearTimeout(timer);
     } else {
       setDataLoaded(true);
     }
@@ -91,12 +110,13 @@ export default function ScanScreen() {
     setLoading(true);
     try {
       const typeLabel = ALERT_TYPES.find((t) => t.type === selectedType)?.label || 'Alert';
+      const sanitizedNote = sanitizeInput(note.trim());
       const newAlert = {
         id: Math.random().toString(36).substring(7),
         carId: qrData.id,
         message: typeLabel,
         alertType: selectedType,
-        senderNote: note.trim() || undefined,
+        senderNote: sanitizedNote || undefined,
         timestamp: Date.now(),
         read: false,
       };
@@ -106,7 +126,7 @@ export default function ScanScreen() {
       setNote('');
       setSelectedType(null);
     } catch (e) {
-      Alert.alert('Error', 'Failed to submit alert. Please try again.');
+      showCustomAlert('Error', 'Failed to submit alert. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -296,7 +316,12 @@ export default function ScanScreen() {
                 {Platform.OS !== 'web' && (
                   <TouchableOpacity
                     style={[styles.callBtn, { backgroundColor: colors.success }]}
-                    onPress={() => Alert.alert('Call', `Dialing ${revealedPhone}`)}
+                    onPress={() => {
+                      showCustomAlert('Call Owner', `Do you want to dial ${revealedPhone}?`, [
+                        { text: 'Cancel', onPress: () => {}, style: 'cancel' },
+                        { text: 'Call', onPress: () => Linking.openURL(`tel:${revealedPhone}`), style: 'default' }
+                      ]);
+                    }}
                   >
                     <Text style={styles.callBtnText}>Call Owner</Text>
                   </TouchableOpacity>
@@ -342,6 +367,13 @@ export default function ScanScreen() {
           <View style={{ height: 40 }} />
         </ScrollView>
       </KeyboardAvoidingView>
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+        buttons={alertButtons}
+      />
     </View>
   );
 }

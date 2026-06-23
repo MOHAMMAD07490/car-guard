@@ -6,6 +6,30 @@ import { getBaseWebUrl } from './qr';
 
 const CARS_KEY = '@carguard_cars';
 const ALERTS_KEY = '@carguard_alerts';
+const USER_KEY = '@carguard_user';
+const TOKEN_KEY = '@carguard_token';
+
+// Web cookie helper functions
+const setWebCookie = (name: string, value: string, days = 365) => {
+  if (Platform.OS === 'web' && typeof document !== 'undefined') {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+  }
+};
+
+const getWebCookie = (name: string): string | null => {
+  if (Platform.OS === 'web' && typeof document !== 'undefined') {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    if (match) return decodeURIComponent(match[2]);
+  }
+  return null;
+};
+
+const deleteWebCookie = (name: string) => {
+  if (Platform.OS === 'web' && typeof document !== 'undefined') {
+    document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax`;
+  }
+};
 
 // Memory cache fallback for environments without storage access (like missing legacy native modules)
 const memoryStorage: Record<string, string> = {};
@@ -83,7 +107,12 @@ const safeRemoveItem = async (key: string): Promise<void> => {
 };
 
 const getAuthHeaders = async (): Promise<Record<string, string>> => {
-  const tokenVal = await safeGetItem(TOKEN_KEY);
+  let tokenVal: string | null = null;
+  if (Platform.OS === 'web') {
+    tokenVal = getWebCookie(TOKEN_KEY);
+  } else {
+    tokenVal = await safeGetItem(TOKEN_KEY);
+  }
   return tokenVal ? { 'Authorization': `Bearer ${tokenVal}` } : {};
 };
 
@@ -306,31 +335,42 @@ export const clearAllData = async (): Promise<void> => {
   await safeRemoveItem(ALERTS_KEY);
 };
 
-const USER_KEY = '@carguard_user';
-const TOKEN_KEY = '@carguard_token';
-
 export const getCurrentUser = async (): Promise<UserProfile | null> => {
+  if (Platform.OS === 'web') {
+    const data = getWebCookie(USER_KEY);
+    return data ? JSON.parse(data) : null;
+  }
   const data = await safeGetItem(USER_KEY);
   return data ? JSON.parse(data) : null;
 };
 
 export const setCurrentUser = async (user: UserProfile, token: string): Promise<void> => {
-  await safeSetItem(USER_KEY, JSON.stringify(user));
-  await safeSetItem(TOKEN_KEY, token);
+  if (Platform.OS === 'web') {
+    setWebCookie(USER_KEY, JSON.stringify(user));
+    setWebCookie(TOKEN_KEY, token);
+  } else {
+    await safeSetItem(USER_KEY, JSON.stringify(user));
+    await safeSetItem(TOKEN_KEY, token);
+  }
 };
 
 export const logout = async (): Promise<void> => {
-  await safeRemoveItem(USER_KEY);
-  await safeRemoveItem(TOKEN_KEY);
-  await safeRemoveItem(CARS_KEY);
-  await safeRemoveItem(ALERTS_KEY);
+  if (Platform.OS === 'web') {
+    deleteWebCookie(USER_KEY);
+    deleteWebCookie(TOKEN_KEY);
+  } else {
+    await safeRemoveItem(USER_KEY);
+    await safeRemoveItem(TOKEN_KEY);
+    await safeRemoveItem(CARS_KEY);
+    await safeRemoveItem(ALERTS_KEY);
+  }
 };
 
 const THEME_KEY = '@carguard_theme';
 
 export const getAppTheme = async (): Promise<'dark' | 'light'> => {
   const t = await safeGetItem(THEME_KEY);
-  return t === 'light' ? 'light' : 'dark';
+  return t === 'dark' ? 'dark' : 'light';
 };
 
 export const setAppTheme = async (theme: 'dark' | 'light'): Promise<void> => {

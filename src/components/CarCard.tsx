@@ -21,14 +21,7 @@ export default function CarCard({ car, onPress, onDelete }: CarCardProps) {
   const { colors } = useAppTheme();
   
   const handleDelete = () => {
-    Alert.alert(
-      'Remove Vehicle',
-      `Are you sure you want to remove vehicle ${car.carNumber}?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Delete', style: 'destructive', onPress: onDelete },
-      ],
-    );
+    onDelete();
   };
 
   // Safe plate suffix for visual badge

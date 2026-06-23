@@ -6,7 +6,6 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
-  Alert,
   Animated,
   useWindowDimensions,
   Platform,
@@ -23,6 +22,8 @@ import GlassCard from '../components/GlassCard';
 import GradientButton from '../components/GradientButton';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { Image } from 'expo-image';
+import CustomAlert from '../components/CustomAlert';
+import * as Notifications from 'expo-notifications';
 import LogoImage from '../../assets/images/icon.png';
 import WelcomeHeroImage from '../../assets/images/welcome_hero.png';
 import Example1Image from '../../assets/images/carguard_example1.png';
@@ -63,6 +64,19 @@ export default function HomeScreen() {
   const { width } = useWindowDimensions();
   const isWeb = Platform.OS === 'web';
   const isDesktop = isWeb && width > 900;
+
+  // Custom Alert Modal States
+  const [alertVisible, setAlertVisible] = useState(false);
+  const [alertTitle, setAlertTitle] = useState('');
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertButtons, setAlertButtons] = useState<Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>>([]);
+
+  const showCustomAlert = (title: string, message: string, buttons?: typeof alertButtons) => {
+    setAlertTitle(title);
+    setAlertMessage(message);
+    setAlertButtons(buttons || []);
+    setAlertVisible(true);
+  };
 
   const handleOpenPrivacy = () => {
     if (Platform.OS === 'web') {
@@ -120,8 +134,8 @@ export default function HomeScreen() {
   };
 
   const handleLogout = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out of your account?', [
-      { text: 'Cancel', style: 'cancel' },
+    showCustomAlert('Sign Out', 'Are you sure you want to sign out of your account?', [
+      { text: 'Cancel', onPress: () => {}, style: 'cancel' },
       {
         text: 'Sign Out',
         style: 'destructive',
@@ -134,11 +148,11 @@ export default function HomeScreen() {
   };
 
   const handleDeleteCar = (car: CarProfile) => {
-    Alert.alert(
+    showCustomAlert(
       'Remove Vehicle',
       `Remove ${car.carNumber} from your account?`,
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: 'Cancel', onPress: () => {}, style: 'cancel' },
         {
           text: 'Delete',
           style: 'destructive',
@@ -150,6 +164,38 @@ export default function HomeScreen() {
       ]
     );
   };
+
+  // Ask for notification permissions in APK Get Started Screen
+  React.useEffect(() => {
+    if (!user && Platform.OS !== 'web') {
+      const timer = setTimeout(() => {
+        showCustomAlert(
+          'Allow Notifications',
+          'Allow QRNote to notify you in real-time when observers scan your windshield tag and report emergencies.',
+          [
+            { text: 'Cancel', onPress: () => {}, style: 'cancel' },
+            {
+              text: 'Allow',
+              onPress: async () => {
+                try {
+                  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+                  let finalStatus = existingStatus;
+                  if (existingStatus !== 'granted') {
+                    const { status } = await Notifications.requestPermissionsAsync();
+                    finalStatus = status;
+                  }
+                } catch (e) {
+                  console.warn('Failed to get notification permission:', e);
+                }
+              },
+              style: 'default',
+            },
+          ]
+        );
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [user]);
 
   if (!user) {
     if (Platform.OS !== 'web') {
@@ -207,6 +253,13 @@ export default function HomeScreen() {
               </View>
             </View>
           </ScrollView>
+          <CustomAlert
+            visible={alertVisible}
+            title={alertTitle}
+            message={alertMessage}
+            onClose={() => setAlertVisible(false)}
+            buttons={alertButtons}
+          />
         </View>
       );
     }
@@ -261,22 +314,20 @@ export default function HomeScreen() {
               </View>
             </View>
 
-            {/* Hero Right side: Mockup of windshield tag */}
+            {/* Hero Right side: Both example PNGs without box wrapper */}
             <View style={[styles.heroRight, isDesktop ? { flex: 0.8, alignItems: 'center' } : { marginTop: Spacing.xl }]}>
-              <GlassCard style={styles.mockupCard}>
-                <View style={styles.mockupTagHeader}>
-                  <Image source={LogoImage} style={{ width: 16, height: 16, marginRight: 6, borderRadius: 3 }} />
-                  <Text style={[styles.mockupTagTitle, { color: colors.textPrimary }]}>QRNOTE SECURE PORTAL</Text>
-                </View>
-                <View style={[styles.mockupQR, { borderColor: colors.border, padding: 0 }]}>
-                  <Image source={Example1Image} style={{ width: 140, height: 140, borderRadius: BorderRadius.md }} contentFit="cover" />
-                </View>
-                <Text style={[styles.mockupPlate, { color: colors.textPrimary }]}>JHHJ 8888</Text>
-                <View style={[styles.mockupBadge, { backgroundColor: colors.successLight, borderColor: colors.success }]}>
-                  <Lock size={12} color={colors.success} style={{ marginRight: 4 }} />
-                  <Text style={[styles.mockupBadgeText, { color: colors.success }]}>Windshield Profile Hidden</Text>
-                </View>
-              </GlassCard>
+              <View style={{ flexDirection: 'row', gap: Spacing.md, justifyContent: 'center' }}>
+                <Image 
+                  source={Example1Image} 
+                  style={{ width: 135, height: 240, borderRadius: BorderRadius.md }} 
+                  contentFit="cover" 
+                />
+                <Image 
+                  source={Example2Image} 
+                  style={{ width: 135, height: 240, borderRadius: BorderRadius.md }} 
+                  contentFit="cover" 
+                />
+              </View>
             </View>
           </View>
 
@@ -503,6 +554,13 @@ export default function HomeScreen() {
             </View>
           </View>
         </ScrollView>
+        <CustomAlert
+          visible={alertVisible}
+          title={alertTitle}
+          message={alertMessage}
+          onClose={() => setAlertVisible(false)}
+          buttons={alertButtons}
+        />
       </View>
     );
   }
@@ -631,6 +689,13 @@ export default function HomeScreen() {
           <Plus size={24} color="#FFFFFF" />
         </LinearGradient>
       </TouchableOpacity>
+      <CustomAlert
+        visible={alertVisible}
+        title={alertTitle}
+        message={alertMessage}
+        onClose={() => setAlertVisible(false)}
+        buttons={alertButtons}
+      />
     </View>
   );
 }
