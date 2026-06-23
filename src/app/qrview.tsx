@@ -23,9 +23,9 @@ import GradientButton from '../components/GradientButton';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { ArrowLeft, Shield, Copy, Share2, Search } from 'lucide-react-native';
 
-import QRBg1 from '../assets/images/qr_bg_1.jpg';
-import QRBg2 from '../assets/images/qr_bg_2.jpg';
-import LogoImage from '../assets/images/icon.png';
+import QRBg1 from '../../assets/images/qr_bg_1.jpg';
+import QRBg2 from '../../assets/images/qr_bg_2.jpg';
+import LogoImage from '../../assets/images/icon.png';
 
 export default function QRViewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
