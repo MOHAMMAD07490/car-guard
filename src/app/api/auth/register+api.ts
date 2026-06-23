@@ -35,9 +35,9 @@ export async function POST(request: Request) {
       createdAt: Date.now(),
     };
 
-    // Save to Vercel Blob
+    // Save to Vercel Blob as private
     await put(prefix, JSON.stringify(userPayload), {
-      access: 'public',
+      access: 'private',
       token,
     });
 

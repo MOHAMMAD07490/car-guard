@@ -82,6 +82,38 @@ const safeRemoveItem = async (key: string): Promise<void> => {
   }
 };
 
+const getAuthHeaders = async (): Promise<Record<string, string>> => {
+  const tokenVal = await safeGetItem(TOKEN_KEY);
+  return tokenVal ? { 'Authorization': `Bearer ${tokenVal}` } : {};
+};
+
+export const syncCarsFromCloud = async (ownerId: string): Promise<CarProfile[]> => {
+  try {
+    const authHeaders = await getAuthHeaders();
+    const response = await fetchWithTimeout(getApiUrl(`/api/cars?ownerId=${ownerId}`), {
+      headers: authHeaders,
+    });
+    if (response.ok) {
+      const cloudCars: CarProfile[] = await response.json();
+      if (cloudCars && cloudCars.length > 0) {
+        const localCars = await getCars();
+        const merged = [...localCars];
+        cloudCars.forEach(cloudCar => {
+          if (!merged.some(localCar => localCar.id === cloudCar.id)) {
+            merged.push(cloudCar);
+          }
+        });
+        await safeSetItem(CARS_KEY, JSON.stringify(merged));
+        return merged.filter(c => c.ownerId === ownerId);
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to sync cars from cloud:', error);
+  }
+  const localCars = await getCars();
+  return localCars.filter(c => c.ownerId === ownerId);
+};
+
 export const saveCar = async (car: CarProfile): Promise<void> => {
   // 1. Save locally (always mirrors to memory storage fallback)
   const cars = await getCars();
@@ -102,9 +134,13 @@ export const saveCar = async (car: CarProfile): Promise<void> => {
 
   // 2. Sync to Vercel Blob cloud via server API
   try {
+    const authHeaders = await getAuthHeaders();
     await fetchWithTimeout(getApiUrl('/api/cars'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        ...authHeaders,
+      },
       body: JSON.stringify(car),
     });
   } catch (error) {
@@ -125,8 +161,10 @@ export const deleteCar = async (id: string): Promise<void> => {
 
   // 2. Sync deletion to cloud API
   try {
+    const authHeaders = await getAuthHeaders();
     await fetchWithTimeout(getApiUrl(`/api/cars?id=${id}`), {
       method: 'DELETE',
+      headers: authHeaders,
     });
   } catch (error) {
     console.warn('Failed to delete car from cloud:', error);
@@ -139,9 +177,12 @@ export const getCarById = async (id: string): Promise<CarProfile | null> => {
   const localCar = cars.find(c => c.id === id);
   if (localCar) return localCar;
 
-  // Fallback to Server API (e.g. for observers scanning the QR)
+  // Fallback to Server API (e.g. for owners accessing from multiple devices)
   try {
-    const response = await fetchWithTimeout(getApiUrl(`/api/cars?id=${id}`));
+    const authHeaders = await getAuthHeaders();
+    const response = await fetchWithTimeout(getApiUrl(`/api/cars?id=${id}`), {
+      headers: authHeaders,
+    });
     if (response.ok) {
       return await response.json();
     }
@@ -157,7 +198,7 @@ export const saveAlert = async (alert: AlertMessage): Promise<void> => {
   alerts.unshift(alert);
   await safeSetItem(ALERTS_KEY, JSON.stringify(alerts));
 
-  // 2. Upload alert to cloud Vercel Blob via server API
+  // 2. Upload alert to cloud Vercel Blob via server API (public visitor endpoint)
   try {
     await fetchWithTimeout(getApiUrl('/api/alerts'), {
       method: 'POST',
@@ -178,7 +219,10 @@ export const getAlerts = async (): Promise<AlertMessage[]> => {
     const cars = await getCars();
     if (cars.length > 0) {
       const carIds = cars.map(c => c.id).join(',');
-      const response = await fetchWithTimeout(getApiUrl(`/api/alerts?carIds=${carIds}`));
+      const authHeaders = await getAuthHeaders();
+      const response = await fetchWithTimeout(getApiUrl(`/api/alerts?carIds=${carIds}`), {
+        headers: authHeaders,
+      });
       if (response.ok) {
         const { alerts } = await response.json();
         
@@ -216,9 +260,13 @@ export const markAlertRead = async (alertId: string): Promise<void> => {
 
     // Update state on cloud Vercel Blob via server API
     try {
+      const authHeaders = await getAuthHeaders();
       await fetchWithTimeout(getApiUrl('/api/alerts'), {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          ...authHeaders,
+        },
         body: JSON.stringify({ alertId, carId: alert.carId }),
       });
     } catch (error) {

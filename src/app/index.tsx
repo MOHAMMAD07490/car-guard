@@ -12,7 +12,7 @@ import {
 import { useRouter, useFocusEffect } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Spacing, FontSize, BorderRadius, Shadow } from '../constants/theme';
-import { getCars, deleteCar, getUnreadCount, getCurrentUser, logout } from '../utils/storage';
+import { getCars, deleteCar, getUnreadCount, getCurrentUser, logout, syncCarsFromCloud } from '../utils/storage';
 import { CarProfile } from '../types/car';
 import { UserProfile } from '../types/user';
 import CarCard from '../components/CarCard';
@@ -46,13 +46,17 @@ export default function HomeScreen() {
     setUser(currentUser);
 
     if (currentUser) {
-      const carList = await getCars();
-      // Filter cars to show only the ones owned by the current logged-in user
-      const filteredCars = carList.filter(c => c.ownerId === currentUser.id);
+      // First load local cars for instant rendering
+      const localCarList = await getCars();
+      const filteredCars = localCarList.filter(c => c.ownerId === currentUser.id);
       setCars(filteredCars);
       
       const count = await getUnreadCount();
       setUnreadCount(count);
+
+      // Trigger background cloud sync to restore cars if the app was reinstalled
+      const syncedCars = await syncCarsFromCloud(currentUser.id);
+      setCars(syncedCars);
     } else {
       setCars([]);
       setUnreadCount(0);
