@@ -1,9 +1,17 @@
-import { list } from '@vercel/blob';
+import { list, get } from '@vercel/blob';
 
 const token = process.env.BLOB_READ_WRITE_TOKEN || 
               process.env['BLOB_READ_WRITE_TOKEN'] || 
               process.env.EXPO_PUBLIC_BLOB_READ_WRITE_TOKEN || 
               process.env['EXPO_PUBLIC_BLOB_READ_WRITE_TOKEN'];
+
+async function fetchPrivateBlobJson(url: string): Promise<any> {
+  const blob = await get(url, { access: 'private', token });
+  if (!blob) {
+    throw new Error('Blob not found');
+  }
+  return new Response(blob.stream).json();
+}
 
 // Simple encoding for credentials
 const encodePassword = (password: string): string => {
@@ -29,8 +37,7 @@ export async function POST(request: Request) {
       return Response.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    const response = await fetch(blobs[0].url);
-    const userPayload = await response.json();
+    const userPayload = await fetchPrivateBlobJson(blobs[0].url);
 
     if (userPayload.password !== encodePassword(password)) {
       return Response.json({ error: 'Invalid email or password' }, { status: 401 });

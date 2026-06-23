@@ -1,14 +1,14 @@
 export const Colors = {
-  // Primary palette - deep blue/indigo
-  primary: '#2563eb',
-  primaryDark: '#1d4ed8',
-  primaryLight: '#3b82f6',
-  primaryGlow: 'rgba(37, 99, 235, 0.15)',
+  // Primary palette - cyan (#00c9ff)
+  primary: '#00c9ff',
+  primaryDark: '#00a3cc',
+  primaryLight: '#33d4ff',
+  primaryGlow: 'rgba(0, 201, 255, 0.15)',
   
-  // Accent - cyan/teal
-  accent: '#3b82f6',
-  accentDark: '#1d4ed8',
-  accentLight: '#60a5fa',
+  // Accent - cyan (#00c9ff)
+  accent: '#00c9ff',
+  accentDark: '#00a3cc',
+  accentLight: '#33d4ff',
   
   // Success/Warning/Danger
   success: '#10B981',
@@ -18,29 +18,29 @@ export const Colors = {
   danger: '#EF4444',
   dangerLight: 'rgba(239, 68, 68, 0.15)',
   
-  // Background layers (dark theme)
-  background: '#09090b',
-  surface: '#18181b',
-  surfaceLight: '#27272a',
-  surfaceLighter: '#3f3f46',
+  // Background layers (light theme)
+  background: '#fafafa',
+  surface: '#ffffff',
+  surfaceLight: '#f4f4f5',
+  surfaceLighter: '#e4e4e7',
   
   // Text
-  textPrimary: '#fafafa',
-  textSecondary: '#a1a1aa',
-  textMuted: '#71717a',
-  textInverse: '#18181b',
+  textPrimary: '#18181b',
+  textSecondary: '#71717a',
+  textMuted: '#a1a1aa',
+  textInverse: '#ffffff',
   
   // Borders
-  border: 'rgba(255, 255, 255, 0.08)',
-  borderLight: 'rgba(255, 255, 255, 0.04)',
+  border: 'rgba(24, 24, 27, 0.08)',
+  borderLight: 'rgba(24, 24, 27, 0.04)',
   
   // Gradients
-  gradientStart: '#2563eb',
-  gradientEnd: '#3b82f6',
+  gradientStart: '#00c9ff',
+  gradientEnd: '#00a3cc',
   
   // Card glass effect
   glass: 'rgba(24, 24, 27, 0.8)',
-  glassBorder: 'rgba(37, 99, 235, 0.15)',
+  glassBorder: 'rgba(0, 201, 255, 0.15)',
   
   // QR specific
   qrBackground: '#FFFFFF',
@@ -59,12 +59,12 @@ export const ThemeColors = {
     textInverse: '#18181b',
     border: 'rgba(255, 255, 255, 0.08)',
     borderLight: 'rgba(255, 255, 255, 0.04)',
-    primary: '#2563eb',
-    primaryDark: '#1d4ed8',
-    primaryLight: '#3b82f6',
-    primaryGlow: 'rgba(37, 99, 235, 0.15)',
-    accent: '#3b82f6',
-    accentLight: '#60a5fa',
+    primary: '#00c9ff',
+    primaryDark: '#00a3cc',
+    primaryLight: '#33d4ff',
+    primaryGlow: 'rgba(0, 201, 255, 0.15)',
+    accent: '#00c9ff',
+    accentLight: '#33d4ff',
     success: '#10b981',
     successLight: 'rgba(16, 185, 129, 0.1)',
     warning: '#f59e0b',
@@ -85,12 +85,12 @@ export const ThemeColors = {
     textInverse: '#ffffff',
     border: 'rgba(24, 24, 27, 0.08)',
     borderLight: 'rgba(24, 24, 27, 0.04)',
-    primary: '#2563eb',
-    primaryDark: '#1d4ed8',
-    primaryLight: '#3b82f6',
-    primaryGlow: 'rgba(37, 99, 235, 0.1)',
-    accent: '#2563eb',
-    accentLight: '#3b82f6',
+    primary: '#00c9ff',
+    primaryDark: '#00a3cc',
+    primaryLight: '#33d4ff',
+    primaryGlow: 'rgba(0, 201, 255, 0.1)',
+    accent: '#00c9ff',
+    accentLight: '#33d4ff',
     success: '#059669',
     successLight: 'rgba(5, 150, 105, 0.08)',
     warning: '#d97706',

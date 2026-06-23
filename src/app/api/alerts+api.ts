@@ -1,9 +1,17 @@
-import { list, put, del } from '@vercel/blob';
+import { list, put, del, get } from '@vercel/blob';
 
 const token = process.env.BLOB_READ_WRITE_TOKEN || 
               process.env['BLOB_READ_WRITE_TOKEN'] || 
               process.env.EXPO_PUBLIC_BLOB_READ_WRITE_TOKEN || 
               process.env['EXPO_PUBLIC_BLOB_READ_WRITE_TOKEN'];
+
+async function fetchPrivateBlobJson(url: string): Promise<any> {
+  const blob = await get(url, { access: 'private', token });
+  if (!blob) {
+    throw new Error('Blob not found');
+  }
+  return new Response(blob.stream).json();
+}
 
 function getAuthorizedUserId(request: Request): string | null {
   const authHeader = request.headers.get('Authorization');
@@ -33,10 +41,7 @@ export async function GET(request: Request) {
     const { blobs: carBlobs } = await list({ prefix: 'cars/', token });
     const carPromises = carBlobs.map(async (blob) => {
       try {
-        const res = await fetch(blob.url);
-        if (res.ok) {
-          return await res.json();
-        }
+        return await fetchPrivateBlobJson(blob.url);
       } catch {}
       return null;
     });
@@ -52,8 +57,7 @@ export async function GET(request: Request) {
       const { blobs } = await list({ prefix: `alerts/${carId}/`, token });
       for (const blob of blobs) {
         try {
-          const response = await fetch(blob.url);
-          const alert = await response.json();
+          const alert = await fetchPrivateBlobJson(blob.url);
           allAlerts.push(alert);
         } catch (e) {
           console.error(`Failed to fetch alert blob ${blob.url}:`, e);
@@ -105,8 +109,7 @@ export async function PUT(request: Request) {
     if (carBlobs.length === 0) {
       return Response.json({ error: 'Car not found' }, { status: 404 });
     }
-    const carResponse = await fetch(carBlobs[0].url);
-    const car = await carResponse.json();
+    const car = await fetchPrivateBlobJson(carBlobs[0].url);
     if (car.ownerId !== userId) {
       return Response.json({ error: 'Forbidden' }, { status: 403 });
     }
@@ -117,8 +120,7 @@ export async function PUT(request: Request) {
       return Response.json({ error: 'Alert not found' }, { status: 404 });
     }
 
-    const response = await fetch(blobs[0].url);
-    const alert = await response.json();
+    const alert = await fetchPrivateBlobJson(blobs[0].url);
     alert.read = true;
 
     // Delete the old one

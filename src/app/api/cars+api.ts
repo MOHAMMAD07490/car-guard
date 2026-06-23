@@ -1,9 +1,17 @@
-import { list, put, del } from '@vercel/blob';
+import { list, put, del, get } from '@vercel/blob';
 
 const token = process.env.BLOB_READ_WRITE_TOKEN || 
               process.env['BLOB_READ_WRITE_TOKEN'] || 
               process.env.EXPO_PUBLIC_BLOB_READ_WRITE_TOKEN || 
               process.env['EXPO_PUBLIC_BLOB_READ_WRITE_TOKEN'];
+
+async function fetchPrivateBlobJson(url: string): Promise<any> {
+  const blob = await get(url, { access: 'private', token });
+  if (!blob) {
+    throw new Error('Blob not found');
+  }
+  return new Response(blob.stream).json();
+}
 
 function getAuthorizedUserId(request: Request): string | null {
   const authHeader = request.headers.get('Authorization');
@@ -29,8 +37,7 @@ export async function GET(request: Request) {
       if (blobs.length === 0) {
         return Response.json({ error: 'Car not found' }, { status: 404 });
       }
-      const response = await fetch(blobs[0].url);
-      const car = await response.json();
+      const car = await fetchPrivateBlobJson(blobs[0].url);
 
       // Check ownership
       if (car.ownerId !== userId) {
@@ -48,10 +55,7 @@ export async function GET(request: Request) {
       const { blobs } = await list({ prefix: 'cars/', token });
       const carPromises = blobs.map(async (blob) => {
         try {
-          const res = await fetch(blob.url);
-          if (res.ok) {
-            return await res.json();
-          }
+          return await fetchPrivateBlobJson(blob.url);
         } catch (e) {
           console.error('Error fetching car blob', blob.url, e);
         }
@@ -121,8 +125,7 @@ export async function DELETE(request: Request) {
   try {
     const { blobs } = await list({ prefix: `cars/${id}.json`, token });
     if (blobs.length > 0) {
-      const response = await fetch(blobs[0].url);
-      const car = await response.json();
+      const car = await fetchPrivateBlobJson(blobs[0].url);
       
       // Ensure ownerId matches authorized user ID
       if (car.ownerId !== userId) {
