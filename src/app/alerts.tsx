@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   RefreshControl,
-  ActivityIndicator,
 } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Spacing, FontSize, BorderRadius } from '../constants/theme';
@@ -16,6 +15,7 @@ import AlertItem from '../components/AlertItem';
 import GlassCard from '../components/GlassCard';
 import { useAppTheme } from '../hooks/useAppTheme';
 import { ArrowLeft } from 'lucide-react-native';
+import LoadingIndicator from '../components/LoadingIndicator';
 
 export default function AlertsScreen() {
   const router = useRouter();
@@ -97,7 +97,7 @@ export default function AlertsScreen() {
 
       {loading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={colors.primary} />
+          <LoadingIndicator message="Loading alerts..." size={100} />
         </View>
       ) : (
         <ScrollView

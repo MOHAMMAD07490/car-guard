@@ -172,18 +172,12 @@ export default function HomeScreen() {
               <Text style={[styles.heroDescription, { color: colors.textSecondary }]}>
                 Generate secure, encrypted QR codes for your windshield. Observers can alert you about double-parking, lights left on, or emergencies instantly—without ever knowing your personal phone number or email address.
               </Text>
-              <View style={[styles.heroButtonRow, { flexDirection: 'row', gap: Spacing.md, marginTop: Spacing.md }]}>
+              <View style={[styles.heroButtonRow, { marginTop: Spacing.md }]}>
                 <GradientButton
                   title="Get Started (Free)"
                   onPress={() => router.push('/login')}
-                  style={{ flex: 1, maxWidth: 200 }}
+                  style={{ width: '100%', maxWidth: 240 }}
                 />
-                <TouchableOpacity
-                  style={[styles.secondaryHeroBtn, { borderColor: colors.border }]}
-                  onPress={() => router.push('/scan/demo')}
-                >
-                  <Text style={[styles.secondaryHeroBtnText, { color: colors.textPrimary }]}>Simulate Scan</Text>
-                </TouchableOpacity>
               </View>
               <Text style={[styles.landingNotice, { color: colors.textMuted, textAlign: 'left', paddingHorizontal: 0, marginTop: Spacing.sm }]}>
                 ✓ Zero app install for observers.  ✓ Private & encrypted storage.
