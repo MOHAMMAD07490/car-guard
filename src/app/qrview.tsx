@@ -164,7 +164,7 @@ export default function QRViewScreen() {
           ctx.restore();
         }
 
-        // 7. Draw Plate Number and Owner Name
+        // 7. Draw Plate Number and Call to Action
         ctx.fillStyle = '#FFFFFF';
         ctx.textAlign = 'center';
         ctx.font = 'bold 64px monospace';
@@ -172,7 +172,7 @@ export default function QRViewScreen() {
 
         ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
         ctx.font = 'bold 36px sans-serif';
-        ctx.fillText(car.ownerName.toUpperCase(), 540, 1330);
+        ctx.fillText('SCAN TO ALERT OWNER', 540, 1330);
 
         // 8. Trigger Download
         const dataUrl = canvas.toDataURL('image/png');
@@ -190,7 +190,7 @@ export default function QRViewScreen() {
       // Native APK Save to Gallery
       try {
         setGenerating(true);
-        const { status } = await MediaLibrary.requestPermissionsAsync();
+        const { status } = await MediaLibrary.requestPermissionsAsync(true);
         if (status !== 'granted') {
           showCustomAlert('Permission Denied', 'Storage permissions are required to save the QR code to your photo library.');
           setGenerating(false);
@@ -290,7 +290,7 @@ export default function QRViewScreen() {
               
               <View style={styles.qrFooterTextContainer}>
                 <Text style={styles.qrPlateText}>{car.carNumber}</Text>
-                <Text style={styles.qrNameText}>{car.ownerName}</Text>
+                <Text style={styles.qrNameText}>SCAN TO ALERT OWNER</Text>
               </View>
             </View>
           </ImageBackground>
